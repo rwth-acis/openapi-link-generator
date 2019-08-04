@@ -1,3 +1,13 @@
+#
+# CUSTOM
+#
+
+dist/
+
+#
+# GITHUB TEMPLATE
+#
+
 # Logs
 logs
 *.log

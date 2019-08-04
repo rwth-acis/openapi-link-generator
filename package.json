@@ -1,0 +1,52 @@
+{
+  "name": "openapi-link-generator",
+  "version": "1.0.0",
+  "description": "A Tool to add link definitions to an OpenAPI documentation",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "start": "npm run build && node ./dist/index.js",
+    "build": "tsc",
+    "test": "jest",
+    "dev": "nodemon --watch src/ --exec \"npm run start\" -e ts",
+    "lint": "tslint \"src/**/*.ts\"",
+    "prettier": "prettier --write \"src/**/*.ts\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rwth-acis/openapi-link-generator.git"
+  },
+  "keywords": [
+    "openapi"
+  ],
+  "author": "Dominik Kus",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rwth-acis/openapi-link-generator/issues"
+  },
+  "homepage": "https://github.com/rwth-acis/openapi-link-generator#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/jest": "^24.0.16",
+    "@types/node": "^12.6.9",
+    "jest": "^24.8.0",
+    "nodemon": "^1.19.1",
+    "prettier": "^1.18.2",
+    "ts-jest": "^24.0.2",
+    "tslint": "^5.18.0",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^3.5.3"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm test && lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{ts,json,md}": [
+      "npm run prettier",
+      "npm run lint",
+      "git add"
+    ]
+  }
+}
