@@ -25,10 +25,16 @@
     "url": "https://github.com/rwth-acis/openapi-link-generator/issues"
   },
   "homepage": "https://github.com/rwth-acis/openapi-link-generator#readme",
-  "dependencies": {},
+  "dependencies": {
+    "swagger2openapi": "^5.3.1",
+    "yaml": "^1.6.0",
+    "yargs": "^13.3.0"
+  },
   "devDependencies": {
     "@types/jest": "^24.0.16",
     "@types/node": "^12.6.9",
+    "@types/yaml": "^1.0.2",
+    "@types/yargs": "^13.0.2",
     "jest": "^24.8.0",
     "nodemon": "^1.19.1",
     "prettier": "^1.18.2",
