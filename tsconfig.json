@@ -7,13 +7,10 @@
     "outDir": "dist",
     "strict": true,
     "moduleResolution": "node",
+    "baseUrl": ".",
+    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true
   },
-  "exclude": [
-    "node_modules",
-    "src/**/*.spec.ts"
-  ],
-  "include": [
-    "src/**/*.ts"
-  ]
+  "exclude": ["node_modules", "src/**/*.spec.ts"],
+  "include": ["src/**/*.ts"]
 }
