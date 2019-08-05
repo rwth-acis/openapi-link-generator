@@ -1,4 +1,4 @@
-import { parseOpenAPIDocument } from './openapi-loader';
+import { parseOpenAPIDocument } from './openapi-tools';
 
 const oai1 = `
 {
@@ -151,10 +151,10 @@ describe('parseOpenAPIDocument', () => {
       throw new Error('Paths are null');
     }
 
-    // Check that we have a ResponseObject, not a ReferenceObject (references should be resolved)
+    // Check that we have content defined
     const responseObj = doc.paths['/create'].post.responses['201'];
-    if (!('description' in responseObj)) {
-      throw new Error('Reference to component not resolved');
+    if (!('content' in responseObj)) {
+      throw new Error('Response is missing content-field');
     }
 
     // Check the schema of the response object
@@ -166,13 +166,20 @@ describe('parseOpenAPIDocument', () => {
       throw new Error('Response definition is null');
     }
 
+    // Check that the components reference is non-resolved. This is crucial to avoid circular dependencies.
+    expect(responseObj.content['application/json'].schema).toStrictEqual({ $ref: '#/components/schemas/TestObject' });
+
     // Check that the schema component exists
     if (doc.components == null || doc.components.schemas == null || doc.components.schemas.TestObject == null) {
       throw new Error('Component definition is null');
     }
 
-    // Check that the components reference is resolved to the same object
-    expect(responseObj.content['application/json'].schema).toStrictEqual(doc.components.schemas.TestObject);
+    // Check that the schema component has properties
+    expect(doc.components.schemas.TestObject).toHaveProperty('type', 'object');
+    expect(doc.components.schemas.TestObject).toHaveProperty('properties.id');
+    expect(doc.components.schemas.TestObject).toHaveProperty('properties.name');
+    expect(doc.components.schemas.TestObject).toHaveProperty('properties.creationDate');
+    expect(doc.components.schemas.TestObject).toHaveProperty('properties.creator');
   });
 
   it('should parse OpenAPI 3.0', async () => {
@@ -189,10 +196,10 @@ describe('parseOpenAPIDocument', () => {
       throw new Error('Paths are null');
     }
 
-    // Check that we have a ResponseObject, not a ReferenceObject (references should be resolved)
+    // Check that we have content defined
     const responseObj = doc.paths['/create'].post.responses['201'];
-    if (!('description' in responseObj)) {
-      throw new Error('Reference to component not resolved');
+    if (!('content' in responseObj)) {
+      throw new Error('Response is missing content-field');
     }
 
     // Check the schema of the response object
@@ -209,7 +216,14 @@ describe('parseOpenAPIDocument', () => {
       throw new Error('Component definition is null');
     }
 
-    // Check that the components reference is resolved to the same object
-    expect(responseObj.content['application/json'].schema).toStrictEqual(doc.components.schemas.TestObject);
+    // Check that the components reference is non-resolved. This is crucial to avoid circular dependencies.
+    expect(responseObj.content['application/json'].schema).toStrictEqual({ $ref: '#/components/schemas/TestObject' });
+
+    // Check that the schema component has properties
+    expect(doc.components.schemas.TestObject).toHaveProperty('type', 'object');
+    expect(doc.components.schemas.TestObject).toHaveProperty('properties.id');
+    expect(doc.components.schemas.TestObject).toHaveProperty('properties.name');
+    expect(doc.components.schemas.TestObject).toHaveProperty('properties.creationDate');
+    expect(doc.components.schemas.TestObject).toHaveProperty('properties.creator');
   });
 });
