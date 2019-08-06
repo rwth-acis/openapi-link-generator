@@ -128,6 +128,7 @@ export default function addLinkDefinitions(oas: OpenAPIV3.Document): OpenAPIV3.D
   potLinks.forEach(potLink => {
     const fromGet = oas.paths[potLink.from].get as OpenAPIV3.OperationObject;
     const fromResponses = fromGet.responses as OpenAPIV3.ResponsesObject;
+    const toGet = oas.paths[potLink.to].get as OpenAPIV3.OperationObject;
 
     // All response objects for successful response codes for a get request.
     // $refs are resolved and deduplicated with _.uniq.
@@ -170,9 +171,18 @@ export default function addLinkDefinitions(oas: OpenAPIV3.Document): OpenAPIV3.D
       // We have ruled out 'cookie' in 'processLinkParameters', so this is a valid Runtime Expression.
       parametersObject[toParam.name] = `$request.${fromParam.in}.${fromParam.name}`;
     });
+    // We use the operationId when possible and the a reference else
+    let operationId: string | undefined;
+    let operationRef: string | undefined;
+    if (toGet.operationId != null) {
+      operationId = toGet.operationId;
+    } else {
+      operationRef = `#/paths/${potLink.from.replace(/\//g, '~1')}/get`;
+    }
     oas.components.links[referenceName] = {
       description: `Automatically generated link definition`,
-      operationRef: `#/paths/${potLink.from.replace(/\//g, '~1')}/get`,
+      operationId,
+      operationRef,
       parameters: parametersObject
     };
 
