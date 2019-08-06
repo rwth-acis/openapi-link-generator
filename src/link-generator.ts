@@ -63,12 +63,30 @@ function processLinkParameters(oas: OpenAPIV3.Document, links: PotentialLink[]):
   log.debug('Processing potential links');
 
   for (const link of links) {
-    const fromGet = oas.paths[link.from].get as OpenAPIV3.OperationObject;
-    const toGet = oas.paths[link.to].get as OpenAPIV3.OperationObject;
+    const fromPath = oas.paths[link.from];
+    const fromGet = fromPath.get as OpenAPIV3.OperationObject;
+    const toPath = oas.paths[link.to];
+    const toGet = toPath.get as OpenAPIV3.OperationObject;
 
-    // TODO incorporate parameters under the path item
+    // Create parameter lists incorporating the path and the operation parameters
     const fromParams = fromGet.parameters != null ? dereferenceParameters(oas, fromGet.parameters) : [];
+    if (fromPath.parameters != null) {
+      fromParams.push(
+        // Filter overriden parameters
+        ...dereferenceParameters(oas, fromPath.parameters).filter(param =>
+          fromParams.every(innerParam => innerParam.name !== param.name)
+        )
+      );
+    }
     const toParams = toGet.parameters != null ? dereferenceParameters(oas, toGet.parameters) : [];
+    if (toPath.parameters != null) {
+      toParams.push(
+        // Filter overriden parameters
+        ...dereferenceParameters(oas, toPath.parameters).filter(param =>
+          toParams.every(innerParam => innerParam.name !== param.name)
+        )
+      );
+    }
 
     // We can not handle cookie parameters as of now
     if (toParams.some(parameter => parameter.in === 'cookie')) {
@@ -104,14 +122,14 @@ function processLinkParameters(oas: OpenAPIV3.Document, links: PotentialLink[]):
   return newLinks;
 }
 
-export default function addLinkDefinitions(oas: OpenAPIV3.Document) {
+export default function addLinkDefinitions(oas: OpenAPIV3.Document): OpenAPIV3.Document {
   const potLinks = processLinkParameters(oas, findPotentialLinkPairs(oas));
   potLinks.forEach(potLink => {
     const fromGet = oas.paths[potLink.from].get as OpenAPIV3.OperationObject;
     const fromResponses = fromGet.responses as OpenAPIV3.ResponsesObject;
 
-    // All responses objects for successful response codes for a get request.
-    // $refs are resolved but deduplicated with _.uniq.
+    // All response objects for successful response codes for a get request.
+    // $refs are resolved and deduplicated with _.uniq.
     // We know that this array is non empty because we filtered those in 'findPotentialLinkPairs'.
     const successGetResponses = _.uniq(
       Object.keys(fromResponses)
@@ -135,6 +153,7 @@ export default function addLinkDefinitions(oas: OpenAPIV3.Document) {
       oas.components.links = {};
     }
     let linkName = _.last(potLink.to.split('/')) as string;
+    // Prevent overwriting an existing link with the same name
     while (linkName in oas.components.links) {
       linkName += '1';
     }
@@ -159,8 +178,6 @@ export default function addLinkDefinitions(oas: OpenAPIV3.Document) {
       };
     });
   });
-  // TODO actually add the link definitions to the oas
-  // console.log(potLinks);
 
   return oas;
 }
