@@ -98,14 +98,15 @@ function processLinkParameters(oas: OpenAPIV3.Document, links: PotentialLink[]):
     // across different operations. Therefore, we filter the potential links where all parameters for the to-operation
     // are already given by the from operation.
     const parameterMap = new Map<OpenAPIV3.ParameterObject, OpenAPIV3.ParameterObject>();
-    const valid = fromParams.every(fromParam => {
+    const valid = toParams.every(toParam => {
       // If both schema-definitions are null the equality check also succeeds
-      const toParam = toParams.find(p => p.name === fromParam.name && _.isEqual(p.schema, fromParam.schema));
-      if (toParam != null) {
+      const fromParam = fromParams.find(p => p.name === toParam.name && _.isEqual(p.schema, toParam.schema));
+      if (fromParam != null) {
         parameterMap.set(fromParam, toParam);
         return true;
       } else {
-        return false;
+        // We have not found a matching from-parameter. However, we do not need one if the parameter is optional.
+        return toParam.required == null || toParam.required === false;
       }
     });
 
@@ -152,18 +153,24 @@ export default function addLinkDefinitions(oas: OpenAPIV3.Document): OpenAPIV3.D
     if (oas.components.links == null) {
       oas.components.links = {};
     }
+
+    // Link Name is the name of the link in the link-definition of a response.
+    // Reference name is the name of the link-definition in the components-section.
     let linkName = _.last(potLink.to.split('/')) as string;
-    // Prevent overwriting an existing link with the same name
-    while (linkName in oas.components.links) {
-      linkName += '1';
+    let referenceName = linkName;
+
+    // Prevent overwriting existing link-components with the same name
+    while (referenceName in oas.components.links) {
+      referenceName += '1';
     }
+
     const parametersObject: { [parameter: string]: any } = {};
     potLink.parameterMap.forEach((toParam, fromParam) => {
       // fromParam.in can only be 'query', 'header', 'path', 'cookie' according to the definition.
       // We have ruled out 'cookie' in 'processLinkParameters', so this is a valid Runtime Expression.
       parametersObject[toParam.name] = `$request.${fromParam.in}.${fromParam.name}`;
     });
-    oas.components.links[linkName] = {
+    oas.components.links[referenceName] = {
       description: `Automatically generated link definition`,
       operationRef: `#/paths/${potLink.from.replace(/\//g, '~1')}/get`,
       parameters: parametersObject
@@ -173,8 +180,12 @@ export default function addLinkDefinitions(oas: OpenAPIV3.Document): OpenAPIV3.D
       if (response.links == null) {
         response.links = {};
       }
+      // Prevent overwriting existing links
+      while (linkName in response.links) {
+        linkName += '1';
+      }
       response.links[linkName] = {
-        $ref: `#/components/links/${linkName}`
+        $ref: `#/components/links/${referenceName}`
       };
     });
   });
