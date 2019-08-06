@@ -1,7 +1,7 @@
 import log from 'loglevel';
 import yargs from 'yargs';
 import addLinkDefinitions from './link-generator';
-import { loadOpenAPIDocument } from './openapi-tools';
+import { loadOpenAPIDocument, saveOpenAPIDocument, serializeOpenAPIDocument } from './openapi-tools';
 
 const argv = yargs
   .usage('Usage: $0 [options] [filename]')
@@ -18,6 +18,17 @@ const argv = yargs
     default: 'warn',
     describe: 'Set the log level'
   })
+  .option('o', {
+    alias: 'output',
+    describe: 'Set the output filename or unset to output to the console',
+    type: 'string'
+  })
+  .option('f', {
+    alias: 'format',
+    choices: ['yaml', 'json'],
+    default: 'json',
+    describe: 'Set the output format'
+  })
   .demandCommand(1).argv;
 
 // This type cast is safe because we specified those choices to yargs
@@ -26,4 +37,11 @@ log.setLevel(loglevel);
 
 loadOpenAPIDocument(argv._[0], argv.e)
   .then(addLinkDefinitions)
+  .then(oas => {
+    if (argv.o != null) {
+      saveOpenAPIDocument(oas, argv.o, argv.f as 'yaml' | 'json', argv.e);
+    } else {
+      console.log(serializeOpenAPIDocument(oas, argv.f as 'yaml' | 'json'));
+    }
+  })
   .catch(error => console.error(error));
