@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import log from 'loglevel';
 import { OpenAPIV3 } from 'openapi-types';
-import { resolveComponentRef } from './openapi-tools';
+import { resolveComponentRef, sanitizeComponentName } from './openapi-tools';
 
 interface PotentialLink {
   from: string;
@@ -158,7 +158,7 @@ export default function addLinkDefinitions(oas: OpenAPIV3.Document): OpenAPIV3.D
 
     // Link Name is the name of the link in the link-definition of a response.
     // Reference name is the name of the link-definition in the components-section.
-    let linkName = _.last(potLink.to.split('/')) as string;
+    let linkName = sanitizeComponentName(_.last(potLink.to.split('/')) as string);
     let referenceName = linkName;
 
     // Prevent overwriting existing link-components with the same name

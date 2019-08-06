@@ -148,3 +148,17 @@ export function resolveComponentRef(
     }
   }
 }
+
+/**
+ * Names for keys of objects in the components-section as well as names for links must adhere to the regular expression
+ * ^[a-zA-Z0-9\.\-_]+$ according to the OpenAPI specification. We replace all other characters with underscores.
+ * https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#componentsObject
+ * @param componentName The component name to be sanitized
+ */
+export function sanitizeComponentName(componentName: string): string {
+  const regex = /[^a-zA-Z0-9\.\-_]/g;
+  if (componentName.length === 0) {
+    throw new Error('The component name must not be empty');
+  }
+  return componentName.replace(regex, '_');
+}

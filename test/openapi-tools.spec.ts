@@ -1,7 +1,12 @@
 import fs from 'fs';
 import { OpenAPIV3 } from 'openapi-types';
 import util from 'util';
-import { loadOpenAPIDocument, parseOpenAPIDocument, resolveComponentRef } from '../src/openapi-tools';
+import {
+  loadOpenAPIDocument,
+  parseOpenAPIDocument,
+  resolveComponentRef,
+  sanitizeComponentName
+} from '../src/openapi-tools';
 
 describe('parseOpenAPIDocument', () => {
   let oai1: string;
@@ -148,5 +153,21 @@ describe('resolveComponentRef', () => {
     expect(() => resolveComponentRef(doc, { $ref: '#/components/parameters/TestParameter' }, 'responses')).toThrow();
     expect(() => resolveComponentRef(doc, { $ref: '#/components/responses/TestResponse' }, 'schemas')).toThrow();
     expect(() => resolveComponentRef(doc, { $ref: '#/components/responses/TestResponse' }, 'parameters')).toThrow();
+  });
+});
+
+describe('sanitizeComponentName', () => {
+  it('removes forbidden characters', () => {
+    expect(sanitizeComponentName('comp$o|nent')).toBe('comp_o_nent');
+    expect(sanitizeComponentName('%')).toBe('_');
+    expect(sanitizeComponentName('!"§$%&/()=?*^°`´')).toBe('________________');
+  });
+
+  it('keeps allowed characters', () => {
+    expect(sanitizeComponentName('aA0-_')).toBe('aA0-_');
+  });
+
+  it('throws on empty name', () => {
+    expect(() => sanitizeComponentName('')).toThrow();
   });
 });
