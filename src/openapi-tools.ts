@@ -59,7 +59,12 @@ export function serializeOpenAPIDocument(document: OpenAPIV3.Document, format: '
  * @param format Whether to export YAML or JSON
  * @param encoding Encoding of the file
  */
-export function saveOpenAPIDocument(document: OpenAPIV3.Document, filename: string, format: 'yaml' | 'json', encoding: string) {
+export function saveOpenAPIDocument(
+  document: OpenAPIV3.Document,
+  filename: string,
+  format: 'yaml' | 'json',
+  encoding: string
+) {
   log.debug(`Writing file ${filename} with encoding ${encoding}`);
   return util.promisify(fs.writeFile)(filename, serializeOpenAPIDocument(document, format), { encoding });
 }
