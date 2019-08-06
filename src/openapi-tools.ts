@@ -43,6 +43,15 @@ export async function loadOpenAPIDocument(filename: string, encoding: string): P
 }
 
 /**
+ * Serialize the OpenAPI document in the given format
+ * @param document The OpenAPI document
+ * @param format The desired format
+ */
+export function serializeOpenAPIDocument(document: OpenAPIV3.Document, format: 'yaml' | 'json') {
+  return format === 'yaml' ? yaml.stringify(document) : JSON.stringify(document);
+}
+
+/**
  * Writes an OpenAPI document to a file.
  * It is important that the document contains no circular references.
  * @param document The OpenAPI document to write
@@ -52,5 +61,68 @@ export async function loadOpenAPIDocument(filename: string, encoding: string): P
  */
 export function saveOpenAPIDocument(document: OpenAPIV3.Document, filename: string, format: 'yaml' | 'json', encoding: string) {
   log.debug(`Writing file ${filename} with encoding ${encoding}`);
-  return util.promisify(fs.writeFile)(filename, format === 'yaml' ? yaml.stringify(document) : JSON.stringify(document), { encoding });
+  return util.promisify(fs.writeFile)(filename, serializeOpenAPIDocument(document, format), { encoding });
+}
+
+/**
+ * Resolves a reference object that points internally to a component definition in the given OpenAPI document.
+ * @param document The OpenAPIV3 document
+ * @param reference The reference object to be resolved
+ * @param type The expected type of the reference
+ */
+export function resolveComponentRef(
+  document: OpenAPIV3.Document,
+  reference: OpenAPIV3.ReferenceObject,
+  type: 'parameters'
+): OpenAPIV3.ParameterObject;
+export function resolveComponentRef(
+  document: OpenAPIV3.Document,
+  reference: OpenAPIV3.ReferenceObject,
+  type: 'schemas'
+): OpenAPIV3.SchemaObject;
+export function resolveComponentRef(
+  document: OpenAPIV3.Document,
+  reference: OpenAPIV3.ReferenceObject,
+  type: 'parameters' | 'schemas'
+): OpenAPIV3.ParameterObject | OpenAPIV3.SchemaObject {
+  const ref = reference.$ref;
+  if (!ref.startsWith('#/components/')) {
+    throw new Error(`Invalid components referernce: ${ref}`);
+  }
+
+  if (document.components == null) {
+    throw new Error(`Could not resolve reference: ${ref}`);
+  }
+
+  const parts = ref.split('/').slice(2);
+  if (type !== parts[0]) {
+    throw new Error(`Invalid reference type: expected ${type}, got ${parts[0]}`);
+  }
+
+  switch (type) {
+    case 'parameters': {
+      if (document.components.parameters == null || !(parts[1] in document.components.parameters)) {
+        throw new Error(`Could not resolve parameter reference: ${ref}`);
+      }
+
+      const obj = document.components.parameters[parts[1]];
+      if ('$ref' in obj) {
+        return resolveComponentRef(document, obj, type);
+      } else {
+        return obj;
+      }
+    }
+    case 'schemas': {
+      if (document.components.schemas == null || !(parts[1] in document.components.schemas)) {
+        throw new Error(`Could not resolve schema reference: ${ref}`);
+      }
+
+      const obj = document.components.schemas[parts[1]];
+      if ('$ref' in obj) {
+        return resolveComponentRef(document, obj, type);
+      } else {
+        return obj;
+      }
+    }
+  }
 }

@@ -1,142 +1,18 @@
-import { parseOpenAPIDocument } from './openapi-tools';
-
-const oai1 = `
-{
-  "openapi": "3.0.0",
-  "info": {
-    "title": "Requirements Bazaar",
-    "version": "0.6",
-  },
-  "paths": {
-    "/create": {
-      "post": {
-        "summary": "This method creates sth.",
-        "operationId": "create",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TestObject"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Returns the created attachment",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TestObject"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server problems"
-          }
-        }
-      }
-    }
-  },
-  "components": {
-    "schemas": {
-      "User": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "userName": {
-            "type": "string"
-          },
-          "emailLeadSubscription": {
-            "type": "boolean",
-            "default": false
-          }
-        }
-      },
-      "TestObject": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string"
-          },
-          "creator": {
-            "$ref": "#/components/schemas/User"
-          },
-          "creationDate": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      }
-    }
-  }
-}
-`;
-
-const swagger1 = `
-swagger: '2.0'
-info:
-  title: Test API
-  version: '1'
-paths:
-  '/create':
-    post:
-      summary: This method creates sth.
-      operationId: create
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      parameters:
-        - in: body
-          name: body
-          required: true
-          schema:
-            '$ref': '#/definitions/TestObject'
-      responses:
-        '201':
-          description: Returns the created TestObject
-          schema:
-            '$ref': '#/definitions/TestObject'
-        '500':
-          description: Internal server problems
-definitions:
-  TestObject:
-    type: object
-    properties:
-      id:
-        type: integer
-        format: int32
-      name:
-        type: string
-      creationDate:
-        type: string
-        format: date-time
-      creator:
-        '$ref': '#/definitions/User'
-  User:
-    type: object
-    properties:
-      id:
-        type: integer
-        format: int32
-      userName:
-        type: string
-      emailLeadSubscription:
-        type: boolean
-        default: false
-`;
+import fs from 'fs';
+import { OpenAPIV3 } from 'openapi-types';
+import util from 'util';
+import { loadOpenAPIDocument, parseOpenAPIDocument, resolveComponentRef } from '../src/openapi-tools';
 
 describe('parseOpenAPIDocument', () => {
+  let oai1: string;
+  let swagger1: string;
+
+  beforeEach(async () => {
+    const rF = util.promisify(fs.readFile);
+    oai1 = await rF('test/fixtures/openapi-minimal.json', { encoding: 'utf8' });
+    swagger1 = await rF('test/fixtures/swagger-minimal.yaml', { encoding: 'utf8' });
+  });
+
   it('should parse Swagger 2.0', async () => {
     const doc = await parseOpenAPIDocument(swagger1);
 
@@ -225,5 +101,38 @@ describe('parseOpenAPIDocument', () => {
     expect(doc.components.schemas.TestObject).toHaveProperty('properties.name');
     expect(doc.components.schemas.TestObject).toHaveProperty('properties.creationDate');
     expect(doc.components.schemas.TestObject).toHaveProperty('properties.creator');
+  });
+});
+
+describe('resolveComponentRef', () => {
+  let doc: OpenAPIV3.Document;
+
+  beforeEach(async () => {
+    doc = await loadOpenAPIDocument('test/fixtures/openapi-components.json', 'utf8');
+  });
+
+  it('should resolve schema references', () => {
+    const ref = resolveComponentRef(doc, { $ref: '#/components/schemas/User' }, 'schemas');
+    expect(ref).toHaveProperty('properties.emailLeadSubscription');
+  });
+
+  it('should follow nested schema references', () => {
+    const ref = resolveComponentRef(doc, { $ref: '#/components/schemas/SchemaReference' }, 'schemas');
+    expect(ref).toHaveProperty('properties.emailLeadSubscription');
+  });
+
+  it('should resolve parameter references', () => {
+    const ref = resolveComponentRef(doc, { $ref: '#/components/parameters/TestParameter' }, 'parameters');
+    expect(ref).toHaveProperty('name', 'parameter');
+  });
+
+  it('should resolve nested parameter references', () => {
+    const ref = resolveComponentRef(doc, { $ref: '#/components/parameters/ParameterReference' }, 'parameters');
+    expect(ref).toHaveProperty('name', 'parameter');
+  });
+
+  it('should respect the type', () => {
+    expect(() => resolveComponentRef(doc, { $ref: '#/components/schemas/SchemaReference' }, 'parameters')).toThrow();
+    expect(() => resolveComponentRef(doc, { $ref: '#/components/parameters/TestParameter' }, 'schemas')).toThrow();
   });
 });
