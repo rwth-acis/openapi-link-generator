@@ -65,7 +65,7 @@ export function saveOpenAPIDocument(
   format: 'yaml' | 'json',
   encoding: string
 ) {
-  log.debug(`Writing file ${filename} with encoding ${encoding}`);
+  log.debug(`Writing file '${filename}' with encoding ${encoding}`);
   return util.promisify(fs.writeFile)(filename, serializeOpenAPIDocument(document, format), { encoding });
 }
 

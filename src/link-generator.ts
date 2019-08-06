@@ -40,7 +40,7 @@ function findPotentialLinkPairs(oas: OpenAPIV3.Document): PotentialLink[] {
     }
   }
 
-  log.debug(`Found ${result.length} potential links`);
+  log.debug(`Found ${result.length} potential link candidates`);
   return result;
 }
 
@@ -60,7 +60,7 @@ function dereferenceParameters(
 function processLinkParameters(oas: OpenAPIV3.Document, links: PotentialLink[]): Link[] {
   // Filter the potential links where the 'to' path requires parameters that are non-existent in the 'from' path
   const newLinks: Link[] = [];
-  log.debug('Processing potential links');
+  log.debug('Processing potential link candidates');
 
   for (const link of links) {
     const fromPath = oas.paths[link.from];
@@ -115,15 +115,16 @@ function processLinkParameters(oas: OpenAPIV3.Document, links: PotentialLink[]):
         ...link,
         parameterMap
       });
-      log.debug(`  Valid link found: '${link.from}' => '${link.to}', ${parameterMap.size} parameter(s)`);
+      log.debug(`  Valid link candidate found: '${link.from}' => '${link.to}', ${parameterMap.size} parameter(s)`);
     }
   }
 
-  log.debug(`Found ${newLinks.length} valid links`);
+  log.debug(`Found ${newLinks.length} valid link candidates`);
   return newLinks;
 }
 
 export default function addLinkDefinitions(oas: OpenAPIV3.Document): OpenAPIV3.Document {
+  let numAddedLinks = 0;
   const potLinks = processLinkParameters(oas, findPotentialLinkPairs(oas));
   potLinks.forEach(potLink => {
     const fromGet = oas.paths[potLink.from].get as OpenAPIV3.OperationObject;
@@ -197,8 +198,10 @@ export default function addLinkDefinitions(oas: OpenAPIV3.Document): OpenAPIV3.D
       response.links[linkName] = {
         $ref: `#/components/links/${referenceName}`
       };
+      numAddedLinks++;
     });
   });
 
+  log.debug(`Added links to ${numAddedLinks} response definitions`);
   return oas;
 }
