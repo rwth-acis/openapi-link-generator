@@ -131,8 +131,22 @@ describe('resolveComponentRef', () => {
     expect(ref).toHaveProperty('name', 'parameter');
   });
 
+  it('should resolve response references', () => {
+    const ref = resolveComponentRef(doc, { $ref: '#/components/responses/TestResponse' }, 'responses');
+    expect(ref).toHaveProperty('description', 'A sample response');
+  });
+
+  it('should resolve nested parameter references', () => {
+    const ref = resolveComponentRef(doc, { $ref: '#/components/responses/ResponseReference' }, 'responses');
+    expect(ref).toHaveProperty('description', 'A sample response');
+  });
+
   it('should respect the type', () => {
     expect(() => resolveComponentRef(doc, { $ref: '#/components/schemas/SchemaReference' }, 'parameters')).toThrow();
+    expect(() => resolveComponentRef(doc, { $ref: '#/components/schemas/SchemaReference' }, 'responses')).toThrow();
     expect(() => resolveComponentRef(doc, { $ref: '#/components/parameters/TestParameter' }, 'schemas')).toThrow();
+    expect(() => resolveComponentRef(doc, { $ref: '#/components/parameters/TestParameter' }, 'responses')).toThrow();
+    expect(() => resolveComponentRef(doc, { $ref: '#/components/responses/TestResponse' }, 'schemas')).toThrow();
+    expect(() => resolveComponentRef(doc, { $ref: '#/components/responses/TestResponse' }, 'parameters')).toThrow();
   });
 });

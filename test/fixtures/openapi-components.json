@@ -57,6 +57,21 @@
           "$ref": "#/components/schemas/TestObject"
         }
       }
+    },
+    "responses": {
+      "ResponseReference": {
+        "$ref": "#/components/responses/TestResponse"
+      },
+      "TestResponse": {
+        "description": "A sample response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/User"
+            }
+          }
+        }
+      }
     }
   }
 }

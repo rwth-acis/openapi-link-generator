@@ -83,8 +83,13 @@ export function resolveComponentRef(
 export function resolveComponentRef(
   document: OpenAPIV3.Document,
   reference: OpenAPIV3.ReferenceObject,
-  type: 'parameters' | 'schemas'
-): OpenAPIV3.ParameterObject | OpenAPIV3.SchemaObject {
+  type: 'responses'
+): OpenAPIV3.ResponseObject;
+export function resolveComponentRef(
+  document: OpenAPIV3.Document,
+  reference: OpenAPIV3.ReferenceObject,
+  type: 'parameters' | 'schemas' | 'responses'
+): OpenAPIV3.ParameterObject | OpenAPIV3.SchemaObject | OpenAPIV3.ResponseObject {
   const ref = reference.$ref;
   if (!ref.startsWith('#/components/')) {
     throw new Error(`Invalid components referernce: ${ref}`);
@@ -118,6 +123,18 @@ export function resolveComponentRef(
       }
 
       const obj = document.components.schemas[parts[1]];
+      if ('$ref' in obj) {
+        return resolveComponentRef(document, obj, type);
+      } else {
+        return obj;
+      }
+    }
+    case 'responses': {
+      if (document.components.responses == null || !(parts[1] in document.components.responses)) {
+        throw new Error(`Could not resolve response reference: ${ref}`);
+      }
+
+      const obj = document.components.responses[parts[1]];
       if ('$ref' in obj) {
         return resolveComponentRef(document, obj, type);
       } else {
