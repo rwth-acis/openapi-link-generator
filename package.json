@@ -9,8 +9,9 @@
     "build": "tsc",
     "test": "jest",
     "dev": "nodemon --watch \"src/**/*.ts\" --ignore \"src/**/*.spec.ts\" --exec \"npm run start --\" -e ts",
-    "lint": "tslint \"src/**/*.ts\"",
-    "prettier": "prettier --write \"src/**/*.ts\""
+    "lint": "tslint \"src/**/*.ts\" \"test/**/*.ts\"",
+    "prettier": "prettier --write \"**/*.js\" \"**/*.ts\" \"**/*.md\" \"**/*.json\" \"**/*.yaml\"",
+    "pretty-quick": "pretty-quick --staged --pattern \"**/*.js\" --pattern \"**/*.ts\" --pattern \"**/*.md\" --pattern \"**/*.json\" --pattern \"**/*.yaml\""
   },
   "repository": {
     "type": "git",
@@ -52,7 +53,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "pretty-quick --staged && npm run lint && npm test"
+      "pre-commit": "npm run pretty-quick && npm run lint && npm test"
     }
   }
 }
