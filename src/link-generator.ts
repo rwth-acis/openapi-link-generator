@@ -4,14 +4,22 @@ import { OpenAPIV3 } from 'openapi-types';
 import { resolveComponentRef, sanitizeComponentName } from './openapi-tools';
 
 interface PotentialLink {
+  // The from and to strings are paths in the oas
   from: string;
   to: string;
 }
 
 interface Link extends PotentialLink {
+  // Keys are parameters of the 'from' path and values are parameters of the 'to' path
   parameterMap: Map<OpenAPIV3.ParameterObject, OpenAPIV3.ParameterObject>;
 }
 
+/**
+ * Find path-pairs where a link may potentially be added. We have such a pair if:
+ * - Both paths have a get-request defined that has at least one successful response
+ * - The to path starts with the from path (e.g. from=/path, to=/path/extension)
+ * @param oas The OpenAPI document
+ */
 function findPotentialLinkPairs(oas: OpenAPIV3.Document): PotentialLink[] {
   const result: PotentialLink[] = [];
 
@@ -44,6 +52,11 @@ function findPotentialLinkPairs(oas: OpenAPIV3.Document): PotentialLink[] {
   return result;
 }
 
+/**
+ * Takes a parameters array from the oas and dereferences all the items.
+ * @param oas The OpenAPI document
+ * @param parameters The parameters to be dereferenced
+ */
 function dereferenceParameters(
   oas: OpenAPIV3.Document,
   parameters: Array<OpenAPIV3.ReferenceObject | OpenAPIV3.ParameterObject>
@@ -57,6 +70,15 @@ function dereferenceParameters(
   });
 }
 
+/**
+ * Filter the list of potential links by looking at the parameters.
+ * To do this, we assume that parameters of different paths with same name and schema have the same meaning.
+ *
+ * If there is a required parameter of the 'to' path and the 'from' path does not have a matching parameter,
+ * we discard this potential link. Otherwise we save the matching parameters in the parametersMap.
+ * @param oas The OpenAPI document
+ * @param links An array of potential links
+ */
 function processLinkParameters(oas: OpenAPIV3.Document, links: PotentialLink[]): Link[] {
   // Filter the potential links where the 'to' path requires parameters that are non-existent in the 'from' path
   const newLinks: Link[] = [];
@@ -132,8 +154,18 @@ function escapeJsonPointer(input: string): string {
   return input.replace(/~/g, '~0').replace(/\//g, '~1');
 }
 
+/**
+ * Adds link definitions to the OAS based on a heuristic.
+ *
+ * A link from a path p1 to a path p2 is added under the following conditions:
+ * - p2 starts with p1
+ * - p1 and p2 have a get-request definition with at least one successful response defined
+ * - For every required parameter of p2, there is a parameter with the same name and schema of p1
+ * @param oas The OpenAPI document
+ */
 export default function addLinkDefinitions(oas: OpenAPIV3.Document): OpenAPIV3.Document {
   let numAddedLinks = 0;
+  oas = _.cloneDeep(oas);
   const potLinks = processLinkParameters(oas, findPotentialLinkPairs(oas));
   potLinks.forEach(potLink => {
     const fromGet = oas.paths[potLink.from].get as OpenAPIV3.OperationObject;
@@ -157,31 +189,14 @@ export default function addLinkDefinitions(oas: OpenAPIV3.Document): OpenAPIV3.D
         })
     );
 
-    // We now add a new link definition to the components section and reference it in every response
-    if (oas.components == null) {
-      oas.components = {};
-    }
-    if (oas.components.links == null) {
-      oas.components.links = {};
-    }
-
-    // Link Name is the name of the link in the link-definition of a response.
-    // Reference name is the name of the link-definition in the components-section.
-    let linkName = sanitizeComponentName(_.last(potLink.to.split('/')) as string);
-    let referenceName = linkName;
-
-    // Prevent overwriting existing link-components with the same name
-    while (referenceName in oas.components.links) {
-      referenceName += '1';
-    }
-
+    // Create the link definition object
     const parametersObject: { [parameter: string]: any } = {};
     potLink.parameterMap.forEach((toParam, fromParam) => {
       // fromParam.in can only be 'query', 'header', 'path', 'cookie' according to the definition.
       // We have ruled out 'cookie' in 'processLinkParameters', so this is a valid Runtime Expression.
       parametersObject[toParam.name] = `$request.${fromParam.in}.${fromParam.name}`;
     });
-    // We use the operationId when possible and the a reference else
+    // We use the operationId when possible and the reference else
     let operationId: string | undefined;
     let operationRef: string | undefined;
     if (toGet.operationId != null) {
@@ -189,28 +204,64 @@ export default function addLinkDefinitions(oas: OpenAPIV3.Document): OpenAPIV3.D
     } else {
       operationRef = `#/paths/${escapeJsonPointer(potLink.from)}/get`;
     }
-    oas.components.links[referenceName] = {
+    const linkDefinition = {
       description: `Automatically generated link definition`,
       operationId,
       operationRef,
       parameters: parametersObject
     };
 
-    successGetResponses.forEach(response => {
+    // Link Name is the name of the link in the link-definition of a response.
+    const linkName = sanitizeComponentName(_.last(potLink.to.split('/')) as string);
+
+    if (successGetResponses.length === 1) {
+      // We only have one response, so we define the link directly in that response.
+      const response = successGetResponses[0];
       if (response.links == null) {
         response.links = {};
       }
       // Prevent overwriting existing links
-      while (linkName in response.links) {
-        linkName += '1';
+      let dedupLinkName = linkName;
+      while (dedupLinkName in response.links) {
+        dedupLinkName += '1';
       }
-      response.links[linkName] = {
-        $ref: `#/components/links/${referenceName}`
-      };
+      response.links[dedupLinkName] = linkDefinition;
       numAddedLinks++;
-    });
+    } else {
+      // We have multiple responses where this link should be added, so we save the link in
+      // the components section and reference it in every response to prevent defining it multiple times.
+      if (oas.components == null) {
+        oas.components = {};
+      }
+      if (oas.components.links == null) {
+        oas.components.links = {};
+      }
+
+      // Reference name is the name of the link-definition in the components-section.
+      let referenceName = linkName;
+      // Prevent overwriting existing link-components with the same name
+      while (referenceName in oas.components.links) {
+        referenceName += '1';
+      }
+      oas.components.links[referenceName] = linkDefinition;
+
+      successGetResponses.forEach(response => {
+        if (response.links == null) {
+          response.links = {};
+        }
+        // Prevent overwriting existing links
+        let dedupLinkName = linkName;
+        while (dedupLinkName in response.links) {
+          dedupLinkName += '1';
+        }
+        response.links[dedupLinkName] = {
+          $ref: `#/components/links/${referenceName}`
+        };
+        numAddedLinks++;
+      });
+    }
   });
 
-  log.debug(`Added links to ${numAddedLinks} response definitions`);
+  log.debug(`Added ${numAddedLinks} links to response definitions`);
   return oas;
 }
