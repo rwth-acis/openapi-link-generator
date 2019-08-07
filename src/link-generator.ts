@@ -198,8 +198,8 @@ export default function addLinkDefinitions(oas: OpenAPIV3.Document): OpenAPIV3.D
     }
     const linkDefinition = {
       description: `Automatically generated link definition`,
-      operationId,
-      operationRef,
+      ...(operationId != null ? { operationId } : {}),
+      ...(operationRef != null ? { operationRef } : {}),
       parameters: parametersObject
     };
 

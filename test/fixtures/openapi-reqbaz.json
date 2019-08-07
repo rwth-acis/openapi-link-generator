@@ -1,0 +1,3211 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "description": "Requirements Bazaar project",
+    "version": "0.6",
+    "title": "Requirements Bazaar",
+    "termsOfService": "http://requirements-bazaar.org",
+    "contact": {
+      "name": "Requirements Bazaar Dev Team",
+      "url": "http://requirements-bazaar.org",
+      "email": "info@requirements-bazaar.org"
+    },
+    "license": {
+      "name": "Apache2",
+      "url": "http://requirements-bazaar.org/license"
+    }
+  },
+  "tags": [
+    {
+      "name": "projects"
+    },
+    {
+      "name": "requirements"
+    },
+    {
+      "name": "comments"
+    },
+    {
+      "name": "categories"
+    },
+    {
+      "name": "attachments"
+    },
+    {
+      "name": "users"
+    }
+  ],
+  "paths": {
+    "/attachments": {
+      "post": {
+        "tags": ["attachments"],
+        "summary": "This method allows to create a new attachment.",
+        "description": "",
+        "operationId": "createAttachment",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Attachment"
+              }
+            }
+          },
+          "description": "Attachment entity as JSON",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Returns the created attachment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Attachment"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/attachments/{attachmentId}": {
+      "get": {
+        "tags": ["attachments"],
+        "summary": "This method allows to retrieve a certain attachment",
+        "description": "",
+        "operationId": "getAttachment",
+        "parameters": [
+          {
+            "name": "attachmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a certain attachment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Attachment"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["attachments"],
+        "summary": "This method deletes a specific attachment.",
+        "description": "",
+        "operationId": "deleteAttachment",
+        "parameters": [
+          {
+            "name": "attachmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the deleted attachment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Attachment"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/categories": {
+      "post": {
+        "tags": ["categories"],
+        "summary": "This method allows to create a new category under a given a project.",
+        "description": "",
+        "operationId": "createCategory",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/Category"
+        },
+        "responses": {
+          "201": {
+            "description": "Returns the created category",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/categories/{categoryId}": {
+      "get": {
+        "tags": ["categories"],
+        "summary": "This method allows to retrieve a certain category.",
+        "description": "",
+        "operationId": "getCategory",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a certain category",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                }
+              }
+            }
+          },
+          "203": {
+            "description": "Returns a certain category",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      },
+      "put": {
+        "tags": ["categories"],
+        "summary": "This method allows to update a certain category.",
+        "description": "",
+        "operationId": "updateCategory",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/Category"
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the updated category",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["categories"],
+        "summary": "This method deletes a specific category.",
+        "description": "",
+        "operationId": "deleteCategory",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the deleted category",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/categories/{categoryId}/contributors": {
+      "get": {
+        "tags": ["categories"],
+        "summary": "This method returns the list of contributors for a specific category.",
+        "description": "",
+        "operationId": "getContributorsForCategory",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a list of contributors for a given category",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryContributors"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/categories/{categoryId}/followers": {
+      "get": {
+        "tags": ["categories"],
+        "summary": "This method returns the list of followers for a specific category.",
+        "description": "",
+        "operationId": "getFollowersForCategory",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Elements of comments by page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a list of followers for a given category",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      },
+      "post": {
+        "tags": ["categories"],
+        "summary": "This method add the current user to the followers list of a given category.",
+        "description": "",
+        "operationId": "followCategory",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Returns the category",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["categories"],
+        "summary": "This method removes the current user from a followers list of a given category.",
+        "description": "",
+        "operationId": "unfollowCategory",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the category",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/categories/{categoryId}/requirements": {
+      "get": {
+        "tags": ["categories"],
+        "summary": "This method returns the list of requirements for a specific category.",
+        "description": "",
+        "operationId": "getRequirementsForCategory",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Elements of requirements by page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search filter",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "description": "State filter",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["all", "open", "realized"],
+              "default": "all"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sort",
+            "required": false,
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["date", "last_activity", "name", "vote", "comment", "follower", "realized"],
+                "default": "date"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a list of requirements for a given project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Category"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/categories/{categoryId}/statistics": {
+      "get": {
+        "tags": ["categories"],
+        "summary": "This method allows to retrieve statistics for one category.",
+        "description": "",
+        "operationId": "getStatisticsForCategory",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "description": "Since timestamp, ISO-8601 e.g. 2017-12-30 or 2017-12-30T18:30:00Z",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns statistics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Statistic"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/comments": {
+      "post": {
+        "tags": ["comments"],
+        "summary": "This method allows to create a new comment.",
+        "description": "",
+        "operationId": "createComment",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Comment"
+              }
+            }
+          },
+          "description": "Comment entity",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Returns the created comment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Comment"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/comments/{commentId}": {
+      "get": {
+        "tags": ["comments"],
+        "summary": "This method allows to retrieve a certain comment",
+        "description": "",
+        "operationId": "getComment",
+        "parameters": [
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a certain comment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Comment"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["comments"],
+        "summary": "This method deletes a specific comment.",
+        "description": "",
+        "operationId": "deleteComment",
+        "parameters": [
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the deleted comment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Comment"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/notifications": {
+      "post": {
+        "summary": "This method sends all notifications (emails) in the waiting queue. Run this method before shutting down Requirements Bazaar.",
+        "description": "",
+        "operationId": "sendNotifications",
+        "responses": {
+          "201": {
+            "description": "Notifications send"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/projects": {
+      "get": {
+        "tags": ["projects"],
+        "summary": "This method returns the list of projects on the server.",
+        "description": "",
+        "operationId": "getProjects",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Elements of project by page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search filter",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sort",
+            "required": false,
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["name", "date", "last_activity", "requirement", "follower"],
+                "default": "name"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of projects",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Project"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      },
+      "post": {
+        "tags": ["projects"],
+        "summary": "This method allows to create a new project.",
+        "description": "",
+        "operationId": "createProject",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/Project"
+        },
+        "responses": {
+          "201": {
+            "description": "Returns the created project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/projects/{projectId}": {
+      "get": {
+        "tags": ["projects"],
+        "summary": "This method allows to retrieve a certain project.",
+        "description": "",
+        "operationId": "getProject",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a certain project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      },
+      "put": {
+        "tags": ["projects"],
+        "summary": "This method allows to update a certain project.",
+        "description": "",
+        "operationId": "updateProject",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/Project"
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the updated project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/projects/{projectId}/categories": {
+      "get": {
+        "tags": ["projects"],
+        "summary": "This method returns the list of categories under a given project.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Elements of categories by page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search filter",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sort",
+            "required": false,
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["name", "date", "last_activity", "requirement", "follower"],
+                "default": "name"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a list of categories for a given project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Category"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/projects/{projectId}/contributors": {
+      "get": {
+        "tags": ["projects"],
+        "summary": "This method returns the list of contributors for a specific project.",
+        "description": "",
+        "operationId": "getContributorsForProject",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a list of contributors for a given project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectContributors"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/projects/{projectId}/followers": {
+      "get": {
+        "tags": ["projects"],
+        "summary": "This method returns the list of followers for a specific project.",
+        "description": "",
+        "operationId": "getFollowersForProject",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Elements of comments by page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a list of followers for a given project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      },
+      "post": {
+        "tags": ["projects"],
+        "summary": "This method add the current user to the followers list of a given project.",
+        "description": "",
+        "operationId": "followProject",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Returns the project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["projects"],
+        "summary": "This method removes the current user from a followers list of a given project.",
+        "description": "",
+        "operationId": "unfollowProject",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/projects/{projectId}/requirements": {
+      "get": {
+        "tags": ["projects"],
+        "summary": "This method returns the list of requirements for a specific project.",
+        "description": "",
+        "operationId": "getRequirementsForProject",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Elements of requirements by page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search filter",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "description": "State filter",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["all", "open", "realized"],
+              "default": "all"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sort",
+            "required": false,
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["date", "last_activity", "name", "vote", "comment", "follower", "realized"],
+                "default": "date"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a list of requirements for a given project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Requirement"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/projects/{projectId}/statistics": {
+      "get": {
+        "tags": ["projects"],
+        "summary": "This method allows to retrieve statistics for one project.",
+        "description": "",
+        "operationId": "getStatisticsForProject",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "description": "Since timestamp, ISO-8601 e.g. 2017-12-30 or 2017-12-30T18:30:00Z",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns statistics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Statistic"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/requirements": {
+      "post": {
+        "tags": ["requirements"],
+        "summary": "This method allows to create a new requirement.",
+        "description": "",
+        "operationId": "createRequirement",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/Requirement"
+        },
+        "responses": {
+          "201": {
+            "description": "Returns the created requirement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Requirement"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/requirements/{requirementId}": {
+      "get": {
+        "tags": ["requirements"],
+        "summary": "This method returns a specific requirement.",
+        "description": "",
+        "operationId": "getRequirement",
+        "parameters": [
+          {
+            "name": "requirementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a certain requirement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Requirement"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      },
+      "put": {
+        "tags": ["requirements"],
+        "summary": "This method updates a specific requirement.",
+        "description": "",
+        "operationId": "updateRequirement",
+        "parameters": [
+          {
+            "name": "requirementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/Requirement"
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the updated requirement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Requirement"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["requirements"],
+        "summary": "This method deletes a specific requirement.",
+        "description": "",
+        "operationId": "deleteRequirement",
+        "parameters": [
+          {
+            "name": "requirementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the deleted requirement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Requirement"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/requirements/{requirementId}/attachments": {
+      "get": {
+        "tags": ["requirements"],
+        "summary": "This method returns the list of attachments for a specific requirement.",
+        "description": "",
+        "operationId": "getAttachmentsForRequirement",
+        "parameters": [
+          {
+            "name": "requirementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Elements of comments by page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a list of attachments for a given requirement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Attachment"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/requirements/{requirementId}/comments": {
+      "get": {
+        "tags": ["requirements"],
+        "summary": "This method returns the list of comments for a specific requirement.",
+        "description": "",
+        "operationId": "getCommentsForRequirement",
+        "parameters": [
+          {
+            "name": "requirementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Elements of comments by page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a list of comments for a given requirement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Comment"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/requirements/{requirementId}/contributors": {
+      "get": {
+        "tags": ["requirements"],
+        "summary": "This method returns the list of contributors for a specific requirement.",
+        "description": "",
+        "operationId": "getContributorsForRequirement",
+        "parameters": [
+          {
+            "name": "requirementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a list of contributors for a given requirement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequirementContributors"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/requirements/{requirementId}/developers": {
+      "get": {
+        "tags": ["requirements"],
+        "summary": "This method returns the list of developers for a specific requirement.",
+        "description": "",
+        "operationId": "getDevelopersForRequirement",
+        "parameters": [
+          {
+            "name": "requirementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Elements of comments by page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a list of developers for a given requirement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      },
+      "post": {
+        "tags": ["requirements"],
+        "summary": "This method add the current user to the developers list of a given requirement.",
+        "description": "",
+        "operationId": "developRequirement",
+        "parameters": [
+          {
+            "name": "requirementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the requirement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Requirement"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["requirements"],
+        "summary": "This method remove the current user from a developers list of a given requirement.",
+        "description": "",
+        "operationId": "undevelopRequirement",
+        "parameters": [
+          {
+            "name": "requirementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the requirement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Requirement"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/requirements/{requirementId}/followers": {
+      "get": {
+        "tags": ["requirements"],
+        "summary": "This method returns the list of followers for a specific requirement.",
+        "description": "",
+        "operationId": "getFollowersForRequirement",
+        "parameters": [
+          {
+            "name": "requirementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Elements of comments by page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a list of followers for a given requirement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      },
+      "post": {
+        "tags": ["requirements"],
+        "summary": "This method add the current user to the followers list of a given requirement.",
+        "description": "",
+        "operationId": "followRequirement",
+        "parameters": [
+          {
+            "name": "requirementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Returns the requirement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Requirement"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["requirements"],
+        "summary": "This method removes the current user from a followers list of a given requirement.",
+        "description": "",
+        "operationId": "unfollowRequirement",
+        "parameters": [
+          {
+            "name": "requirementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the requirement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Requirement"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/requirements/{requirementId}/leaddevelopers": {
+      "post": {
+        "tags": ["requirements"],
+        "summary": "This method set the current user as lead developer for a given requirement.",
+        "description": "",
+        "operationId": "leaddevelopRequirement",
+        "parameters": [
+          {
+            "name": "requirementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the requirement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Requirement"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["requirements"],
+        "summary": "This method removes the current user as lead developer for a given requirement.",
+        "description": "",
+        "operationId": "unleaddevelopRequirement",
+        "parameters": [
+          {
+            "name": "requirementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the requirement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Requirement"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/requirements/{requirementId}/realized": {
+      "post": {
+        "tags": ["requirements"],
+        "summary": "This method set the realized field to now for a given requirement.",
+        "description": "",
+        "operationId": "realize",
+        "parameters": [
+          {
+            "name": "requirementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the requirement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Requirement"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["requirements"],
+        "summary": "This method removes the realized information for the given requirement.",
+        "description": "",
+        "operationId": "unrealize",
+        "parameters": [
+          {
+            "name": "requirementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the requirement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Requirement"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/requirements/{requirementId}/statistics": {
+      "get": {
+        "tags": ["requirements"],
+        "summary": "This method allows to retrieve statistics for one requirement.",
+        "description": "",
+        "operationId": "getStatisticsForRequirement",
+        "parameters": [
+          {
+            "name": "requirementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "description": "Since timestamp, ISO-8601 e.g. 2017-12-30 or 2017-12-30T18:30:00Z",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns statistics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Statistic"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/requirements/{requirementId}/votes": {
+      "post": {
+        "tags": ["requirements"],
+        "summary": "This method creates a vote for the given requirement in the name of the current user.",
+        "description": "",
+        "operationId": "vote",
+        "parameters": [
+          {
+            "name": "requirementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "description": "Vote direction",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["up", "down"],
+              "default": "up"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the requirement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Requirement"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["requirements"],
+        "summary": "This method removes the vote of the given requirement made by the current user.",
+        "description": "",
+        "operationId": "unvote",
+        "parameters": [
+          {
+            "name": "requirementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the requirement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Requirement"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/statistics": {
+      "get": {
+        "summary": "This method allows to retrieve statistics over all projects.",
+        "description": "",
+        "operationId": "getStatistics",
+        "parameters": [
+          {
+            "name": "since",
+            "in": "query",
+            "description": "Since timestamp, ISO-8601 e.g. 2017-12-30 or 2017-12-30T18:30:00Z",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns statistics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Statistic"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/users/me": {
+      "get": {
+        "tags": ["users"],
+        "summary": "This method allows to retrieve the active user.",
+        "description": "",
+        "operationId": "getActiveUser",
+        "responses": {
+          "200": {
+            "description": "Returns the active user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/users/{userId}": {
+      "get": {
+        "tags": ["users"],
+        "summary": "This method allows to retrieve a certain user.",
+        "description": "",
+        "operationId": "getUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a certain user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      },
+      "put": {
+        "tags": ["users"],
+        "summary": "This method allows to update the user profile.",
+        "description": "",
+        "operationId": "updateUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          },
+          "description": "User entity as JSON",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the updated user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    },
+    "/version": {
+      "get": {
+        "summary": "This method allows to retrieve the service name version.",
+        "description": "",
+        "operationId": "getServiceNameVersion",
+        "responses": {
+          "200": {
+            "description": "Returns service name version"
+          },
+          "500": {
+            "description": "Internal server problems"
+          }
+        },
+        "security": [
+          {
+            "defaultProvider": ["openid", "email", "profile"]
+          }
+        ]
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "https://requirements-bazaar.org/bazaar/"
+    }
+  ],
+  "components": {
+    "requestBodies": {
+      "Category": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Category"
+            }
+          }
+        },
+        "description": "Category entity",
+        "required": true
+      },
+      "Project": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Project"
+            }
+          }
+        },
+        "description": "Project entity",
+        "required": true
+      },
+      "Requirement": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Requirement"
+            }
+          }
+        },
+        "description": "Requirement entity",
+        "required": true
+      }
+    },
+    "securitySchemes": {
+      "defaultProvider": {
+        "type": "oauth2",
+        "flows": {
+          "implicit": {
+            "authorizationUrl": "https://api.learning-layers.eu/o/oauth2/authorize",
+            "scopes": {
+              "openid": "Access Identity",
+              "profile": "Access Profile Data",
+              "email": "Access E-Mail-Address"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Project": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "visibility": {
+            "type": "boolean",
+            "default": false
+          },
+          "defaultCategoryId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "leader": {
+            "$ref": "#/components/schemas/User"
+          },
+          "creationDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastUpdatedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "numberOfCategories": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "numberOfRequirements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "numberOfFollowers": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isFollower": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "Requirement": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "realized": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "projectId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "creator": {
+            "$ref": "#/components/schemas/User"
+          },
+          "leadDeveloper": {
+            "$ref": "#/components/schemas/User"
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Category"
+            }
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Attachment"
+            }
+          },
+          "creationDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastUpdatedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "numberOfComments": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "numberOfAttachments": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "numberOfFollowers": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "upVotes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "downVotes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userVoted": {
+            "type": "string",
+            "enum": ["UP_VOTE", "DOWN_VOTE", "NO_VOTE"]
+          },
+          "isFollower": {
+            "type": "boolean",
+            "default": false
+          },
+          "isDeveloper": {
+            "type": "boolean",
+            "default": false
+          },
+          "isContributor": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "Comment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "replyToComment": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "requirementId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "creator": {
+            "$ref": "#/components/schemas/User"
+          },
+          "creationDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastUpdatedDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userName": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "admin": {
+            "type": "boolean",
+            "default": false
+          },
+          "las2peerId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "profileImage": {
+            "type": "string"
+          },
+          "emailLeadSubscription": {
+            "type": "boolean",
+            "default": false
+          },
+          "emailFollowSubscription": {
+            "type": "boolean",
+            "default": false
+          },
+          "creationDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastUpdatedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastLoginDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Category": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "leader": {
+            "$ref": "#/components/schemas/User"
+          },
+          "creationDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastUpdatedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "numberOfRequirements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "numberOfFollowers": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isFollower": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "Statistic": {
+        "type": "object",
+        "properties": {
+          "numberOfProjects": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "numberOfCategories": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "numberOfRequirements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "numberOfComments": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "numberOfAttachments": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "numberOfVotes": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ProjectContributors": {
+        "type": "object",
+        "properties": {
+          "leader": {
+            "$ref": "#/components/schemas/User"
+          },
+          "categoryLeader": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          },
+          "requirementCreator": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          },
+          "leadDeveloper": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          },
+          "developers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          },
+          "commentCreator": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          },
+          "attachmentCreator": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          }
+        }
+      },
+      "Attachment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "identifier": {
+            "type": "string"
+          },
+          "fileUrl": {
+            "type": "string"
+          },
+          "requirementId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "creator": {
+            "$ref": "#/components/schemas/User"
+          },
+          "creationDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastUpdatedDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CategoryContributors": {
+        "type": "object",
+        "properties": {
+          "leader": {
+            "$ref": "#/components/schemas/User"
+          },
+          "requirementCreator": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          },
+          "leadDeveloper": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          },
+          "developers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          },
+          "commentCreator": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          },
+          "attachmentCreator": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          }
+        }
+      },
+      "RequirementContributors": {
+        "type": "object",
+        "properties": {
+          "creator": {
+            "$ref": "#/components/schemas/User"
+          },
+          "leadDeveloper": {
+            "$ref": "#/components/schemas/User"
+          },
+          "developers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          },
+          "commentCreator": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          },
+          "attachmentCreator": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          }
+        }
+      }
+    }
+  }
+}
