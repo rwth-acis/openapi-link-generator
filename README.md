@@ -1,8 +1,20 @@
 # OpenAPI Link-Generator
 
 OpenAPI Link-Generator is a tool that enhances an existing OpenAPI documentation by adding link definitions whenever possible.
-A Swagger/OpenAPI 2.0 input is automatically converted to OpenAPI 3.0 and the output is always in OpenAPI 3.0 format.
+It accepts Swagger/OpenAPI 2.0 or OpenAPI 3.0 input.
+The output is always in OpenAPI 3.0 format.
 Both YAML and JSON supported.
+
+## Assumption
+
+The link-generator works on the assumption that when there are two parameters for two different paths that have the same name and the same schema, those parameters are semantically identical.
+
+## Functionality
+
+The link-generator adds a link from path A to path B whenever:
+
+- Path B starts with path A (e.g. `A = /example` and `B = /example/extension`)
+- The required parameters for path B are a subset of all the parameters for path A (considering the assumption above)
 
 ## Usage
 
