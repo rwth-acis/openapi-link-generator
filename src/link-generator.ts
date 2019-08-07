@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import log from 'loglevel';
 import { OpenAPIV3 } from 'openapi-types';
-import { resolveComponentRef, sanitizeComponentName } from './openapi-tools';
+import { resolveComponentRef, sanitizeComponentName, serializeJsonPointer } from './openapi-tools';
 
 interface PotentialLink {
   // The from and to strings are paths in the oas
@@ -146,15 +146,6 @@ function processLinkParameters(oas: OpenAPIV3.Document, links: PotentialLink[]):
 }
 
 /**
- * Escape a path element of a JPointer according to the specification.
- * https://cswr.github.io/JsonSchema/spec/definitions_references/#json-pointers
- * @param input The path element to be escaped
- */
-function escapeJsonPointer(input: string): string {
-  return input.replace(/~/g, '~0').replace(/\//g, '~1');
-}
-
-/**
  * Adds link definitions to the OAS based on a heuristic.
  *
  * A link from a path p1 to a path p2 is added under the following conditions:
@@ -167,6 +158,7 @@ export default function addLinkDefinitions(oas: OpenAPIV3.Document): OpenAPIV3.D
   let numAddedLinks = 0;
   oas = _.cloneDeep(oas);
   const potLinks = processLinkParameters(oas, findPotentialLinkPairs(oas));
+
   potLinks.forEach(potLink => {
     const fromGet = oas.paths[potLink.from].get as OpenAPIV3.OperationObject;
     const fromResponses = fromGet.responses as OpenAPIV3.ResponsesObject;
@@ -202,7 +194,7 @@ export default function addLinkDefinitions(oas: OpenAPIV3.Document): OpenAPIV3.D
     if (toGet.operationId != null) {
       operationId = toGet.operationId;
     } else {
-      operationRef = `#/paths/${escapeJsonPointer(potLink.from)}/get`;
+      operationRef = serializeJsonPointer(['paths', potLink.from, 'get']);
     }
     const linkDefinition = {
       description: `Automatically generated link definition`,
@@ -255,7 +247,7 @@ export default function addLinkDefinitions(oas: OpenAPIV3.Document): OpenAPIV3.D
           dedupLinkName += '1';
         }
         response.links[dedupLinkName] = {
-          $ref: `#/components/links/${referenceName}`
+          $ref: serializeJsonPointer(['components', 'links', referenceName])
         };
         numAddedLinks++;
       });

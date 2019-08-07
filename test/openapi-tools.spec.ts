@@ -3,9 +3,11 @@ import { OpenAPIV3 } from 'openapi-types';
 import util from 'util';
 import {
   loadOpenAPIDocument,
+  parseJsonPointer,
   parseOpenAPIDocument,
   resolveComponentRef,
-  sanitizeComponentName
+  sanitizeComponentName,
+  serializeJsonPointer
 } from '../src/openapi-tools';
 
 describe('parseOpenAPIDocument', () => {
@@ -169,5 +171,40 @@ describe('sanitizeComponentName', () => {
 
   it('throws on empty name', () => {
     expect(() => sanitizeComponentName('')).toThrow();
+  });
+});
+
+describe('serializeJsonPointer', () => {
+  it('assembles paths correctly', () => {
+    expect(serializeJsonPointer(['components', 'abc'])).toBe('#/components/abc');
+    expect(serializeJsonPointer(['abc'])).toBe('#/abc');
+  });
+
+  it('escapes characters correctly', () => {
+    expect(serializeJsonPointer(['/components', '~ab-c'])).toBe('#/~1components/~0ab-c');
+    expect(serializeJsonPointer(['c/o~mp', '~~ab~//'])).toBe('#/c~1o~0mp/~0~0ab~0~1~1');
+    expect(serializeJsonPointer(['!"§$%&()=?*^°`´$%/|~'])).toBe('#/!"§$%&()=?*^°`´$%~1|~0');
+  });
+
+  it('handles empty paths', () => {
+    expect(serializeJsonPointer([])).toBe('#/');
+  });
+});
+
+describe('parseJsonPointer', () => {
+  it('splits paths correctly', () => {
+    expect(parseJsonPointer('#/components/abc')).toEqual(['components', 'abc']);
+    expect(parseJsonPointer('#/')).toEqual([]);
+  });
+
+  it('parses control characters', () => {
+    expect(parseJsonPointer('#/~1components/~0ab-c')).toEqual(['/components', '~ab-c']);
+    expect(parseJsonPointer('#/c~1o~0mp/~0~0ab~0~1~1')).toEqual(['c/o~mp', '~~ab~//']);
+    expect(parseJsonPointer('#/!"§$%&()=?*^°`´$%~1|~0')).toEqual(['!"§$%&()=?*^°`´$%/|~']);
+  });
+
+  it('throws on non-local pointers', () => {
+    expect(() => parseJsonPointer('')).toThrow();
+    expect(() => parseJsonPointer('http://example.com/schema#/components')).toThrow();
   });
 });

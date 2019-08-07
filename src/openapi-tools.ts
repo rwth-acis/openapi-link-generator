@@ -70,6 +70,45 @@ export function saveOpenAPIDocument(
 }
 
 /**
+ * Takes the parts of a JPointer and serialized them into a string according to the specification.
+ * Only produces JPointers without an address, meaning local references.
+ * https://cswr.github.io/JsonSchema/spec/definitions_references/#json-pointers
+ *
+ * Example:
+ *   Input  ['components', '/parts']
+ *   Output '#/components/~1parts'
+ * @param input The path elements of the JPointer
+ */
+export function serializeJsonPointer(input: string[]): string {
+  if (input.length === 0) {
+    return '#/';
+  }
+  return input
+    .map(str => str.replace(/~/g, '~0').replace(/\//g, '~1'))
+    .reduce((prev, curr) => (prev += '/' + curr), '#');
+}
+
+/**
+ * Takes a serialized JPointer as input and parses it into its path parts. Only works for local
+ * references where no address is specified (starting with '#').
+ *
+ * Example:
+ *   Input  '#/components/~1parts'
+ *   Output ['components', '/parts']
+ * @param input The JPointer to be parsed
+ */
+export function parseJsonPointer(input: string): string[] {
+  if (!input.startsWith('#')) {
+    throw new Error(`Non-local links are not supported: ${input}`);
+  }
+  return input
+    .split('/')
+    .slice(1)
+    .map(str => str.replace(/~1/g, '/').replace(/~0/g, '~'))
+    .filter(str => str.length > 0);
+}
+
+/**
  * Resolves a reference object that points internally to a component definition in the given OpenAPI document.
  * @param document The OpenAPIV3 document
  * @param reference The reference object to be resolved
@@ -95,27 +134,26 @@ export function resolveComponentRef(
   reference: OpenAPIV3.ReferenceObject,
   type: 'parameters' | 'schemas' | 'responses'
 ): OpenAPIV3.ParameterObject | OpenAPIV3.SchemaObject | OpenAPIV3.ResponseObject {
-  const ref = reference.$ref;
-  if (!ref.startsWith('#/components/')) {
-    throw new Error(`Invalid components referernce: ${ref}`);
+  const ref = parseJsonPointer(reference.$ref);
+  if (ref.length !== 3 || ref[0] !== 'components') {
+    throw new Error(`Invalid component referernce: ${reference.$ref}`);
   }
 
   if (document.components == null) {
-    throw new Error(`Could not resolve reference: ${ref}`);
+    throw new Error(`Could not resolve reference: ${reference.$ref}`);
   }
 
-  const parts = ref.split('/').slice(2);
-  if (type !== parts[0]) {
-    throw new Error(`Invalid reference type: expected ${type}, got ${parts[0]}`);
+  if (type !== ref[1]) {
+    throw new Error(`Invalid reference type: expected ${type}, got ${ref[1]}`);
   }
 
   switch (type) {
     case 'parameters': {
-      if (document.components.parameters == null || !(parts[1] in document.components.parameters)) {
-        throw new Error(`Could not resolve parameter reference: ${ref}`);
+      if (document.components.parameters == null || !(ref[2] in document.components.parameters)) {
+        throw new Error(`Could not resolve parameter reference: ${reference.$ref}`);
       }
 
-      const obj = document.components.parameters[parts[1]];
+      const obj = document.components.parameters[ref[2]];
       if ('$ref' in obj) {
         return resolveComponentRef(document, obj, type);
       } else {
@@ -123,11 +161,11 @@ export function resolveComponentRef(
       }
     }
     case 'schemas': {
-      if (document.components.schemas == null || !(parts[1] in document.components.schemas)) {
-        throw new Error(`Could not resolve schema reference: ${ref}`);
+      if (document.components.schemas == null || !(ref[2] in document.components.schemas)) {
+        throw new Error(`Could not resolve schema reference: ${reference.$ref}`);
       }
 
-      const obj = document.components.schemas[parts[1]];
+      const obj = document.components.schemas[ref[2]];
       if ('$ref' in obj) {
         return resolveComponentRef(document, obj, type);
       } else {
@@ -135,11 +173,11 @@ export function resolveComponentRef(
       }
     }
     case 'responses': {
-      if (document.components.responses == null || !(parts[1] in document.components.responses)) {
-        throw new Error(`Could not resolve response reference: ${ref}`);
+      if (document.components.responses == null || !(ref[2] in document.components.responses)) {
+        throw new Error(`Could not resolve response reference: ${reference.$ref}`);
       }
 
-      const obj = document.components.responses[parts[1]];
+      const obj = document.components.responses[ref[2]];
       if ('$ref' in obj) {
         return resolveComponentRef(document, obj, type);
       } else {
