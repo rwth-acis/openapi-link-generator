@@ -123,6 +123,15 @@ function processLinkParameters(oas: OpenAPIV3.Document, links: PotentialLink[]):
   return newLinks;
 }
 
+/**
+ * Escape a path element of a JPointer according to the specification.
+ * https://cswr.github.io/JsonSchema/spec/definitions_references/#json-pointers
+ * @param input The path element to be escaped
+ */
+function escapeJsonPointer(input: string): string {
+  return input.replace(/~/g, '~0').replace(/\//g, '~1');
+}
+
 export default function addLinkDefinitions(oas: OpenAPIV3.Document): OpenAPIV3.Document {
   let numAddedLinks = 0;
   const potLinks = processLinkParameters(oas, findPotentialLinkPairs(oas));
@@ -178,7 +187,7 @@ export default function addLinkDefinitions(oas: OpenAPIV3.Document): OpenAPIV3.D
     if (toGet.operationId != null) {
       operationId = toGet.operationId;
     } else {
-      operationRef = `#/paths/${potLink.from.replace(/\//g, '~1')}/get`;
+      operationRef = `#/paths/${escapeJsonPointer(potLink.from)}/get`;
     }
     oas.components.links[referenceName] = {
       description: `Automatically generated link definition`,
