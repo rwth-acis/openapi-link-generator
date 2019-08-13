@@ -17,7 +17,8 @@ interface Link extends PotentialLink {
 /**
  * Find path-pairs where a link may potentially be added. We have such a pair if:
  * - Both paths have a get-request defined that has at least one successful response
- * - The to path starts with the from path (e.g. from=/path, to=/path/extension)
+ * - The to path is an extension of the from path (e.g. from=/path, to=/path/extension
+ *   but not from=/path, to=/pathA)
  * @param oas The OpenAPI document
  */
 function findPotentialLinkPairs(oas: OpenAPIV3.Document): PotentialLink[] {
@@ -36,10 +37,13 @@ function findPotentialLinkPairs(oas: OpenAPIV3.Document): PotentialLink[] {
     );
   });
 
-  // Search for a pair of paths such that one path starts with the other
+  // Search for a pair of paths such that one path is an extension of the other
   for (const path of getPaths) {
     for (const innerPath of getPaths) {
-      if (path !== innerPath && innerPath.startsWith(path)) {
+      if (
+        path !== innerPath &&
+        ((path.endsWith('/') && innerPath.startsWith(path)) || innerPath.startsWith(path + '/'))
+      ) {
         result.push({
           from: path,
           to: innerPath

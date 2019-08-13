@@ -5,9 +5,11 @@ import { loadOpenAPIDocument } from '../src/openapi-tools';
 
 describe('addLinkDefinitions', () => {
   let oas: OpenAPIV3.Document;
+  let oasSubstring: OpenAPIV3.Document;
 
   beforeEach(async () => {
     oas = await loadOpenAPIDocument('test/fixtures/openapi-reqbaz.json', 'utf8');
+    oasSubstring = await loadOpenAPIDocument('test/fixtures/openapi-substring.json', 'utf8');
   });
 
   it('clones the oas-object', () => {
@@ -219,5 +221,10 @@ describe('addLinkDefinitions', () => {
     expect((res.components as OpenAPIV3.ComponentsObject).links).toMatchObject({
       contributors: link
     });
+  });
+
+  it('does detect path extension instead of substring', () => {
+    // Paths of the form /A and /A/B should be linked. Paths of the form /A, /AB not.
+    expect(addLinkDefinitions(oasSubstring)).toStrictEqual(oasSubstring);
   });
 });
