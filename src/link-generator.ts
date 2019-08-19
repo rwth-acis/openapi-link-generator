@@ -114,11 +114,9 @@ function processLinkParameters(oas: OpenAPIV3.Document, links: PotentialLink[]):
       );
     }
 
-    // We can not handle cookie parameters as of now
-    if (toParams.some(parameter => parameter.in === 'cookie')) {
-      log.warn(`Cookie parameters are currently not supported. Ignoring path '${link.to}'.`);
-      continue;
-    }
+    // Ignore cookie parameters as they are assumed to be automatically conveyed
+    _.remove(toParams, parameter => parameter.in === 'cookie');
+    _.remove(fromParams, parameter => parameter.in === 'cookie');
 
     // We use a simple heuristic: We assume that parameters with the same name and same schema have identical meaning
     // across different operations. Therefore, we filter the potential links where all parameters for the to-operation
