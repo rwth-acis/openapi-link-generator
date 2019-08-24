@@ -2,8 +2,8 @@
   "name": "openapi-link-generator",
   "version": "1.0.0",
   "description": "A Tool to add link definitions to an OpenAPI documentation",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/link-generator.js",
+  "types": "./dist/link-generator.d.ts",
   "scripts": {
     "start": "npm run build && node ./dist/index.js",
     "build": "tsc",
