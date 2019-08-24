@@ -156,7 +156,7 @@ function processLinkParameters(oas: OpenAPIV3.Document, links: PotentialLink[]):
  * - For every required parameter of p2, there is a parameter with the same name and schema of p1
  * @param oas The OpenAPI document
  */
-export default function addLinkDefinitions(oas: OpenAPIV3.Document): OpenAPIV3.Document {
+export default function addLinkDefinitions(oas: OpenAPIV3.Document): { oas: OpenAPIV3.Document; numLinks: number } {
   let numAddedLinks = 0;
   oas = _.cloneDeep(oas);
   const potLinks = processLinkParameters(oas, findPotentialLinkPairs(oas));
@@ -206,7 +206,10 @@ export default function addLinkDefinitions(oas: OpenAPIV3.Document): OpenAPIV3.D
     };
 
     // Link Name is the name of the link in the link-definition of a response.
-    const linkName = sanitizeComponentName(_.last(potLink.to.split('/')) as string);
+    const toLinkParts = potLink.to.split('/');
+    const linkName = sanitizeComponentName(
+      potLink.to.endsWith('/') ? toLinkParts[toLinkParts.length - 2] : toLinkParts[toLinkParts.length - 1]
+    );
 
     if (successGetResponses.length === 1) {
       // We only have one response, so we define the link directly in that response.
@@ -257,5 +260,5 @@ export default function addLinkDefinitions(oas: OpenAPIV3.Document): OpenAPIV3.D
   });
 
   log.debug(`Added ${numAddedLinks} links to response definitions`);
-  return oas;
+  return { oas, numLinks: numAddedLinks };
 }

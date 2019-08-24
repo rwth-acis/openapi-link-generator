@@ -13,17 +13,17 @@ describe('addLinkDefinitions', () => {
   });
 
   it('clones the oas-object', () => {
-    const res = addLinkDefinitions(oas);
+    const res = addLinkDefinitions(oas).oas;
     expect(res).not.toBe(oas);
   });
 
   it('returns a valid oas', async () => {
-    const res = addLinkDefinitions(oas);
+    const res = addLinkDefinitions(oas).oas;
     expect((await oasValidator.validate(res, {})).valid).toBe(true);
   });
 
   it('does not remove/overwrite any property', () => {
-    const res = addLinkDefinitions(oas);
+    const res = addLinkDefinitions(oas).oas;
 
     const catResponses = ((res.paths['/categories/{categoryId}'] as OpenAPIV3.PathItemObject)
       .get as OpenAPIV3.OperationObject).responses as OpenAPIV3.ResponsesObject;
@@ -39,7 +39,7 @@ describe('addLinkDefinitions', () => {
   });
 
   it('adds the desired link definitions', () => {
-    const res = addLinkDefinitions(oas);
+    const res = addLinkDefinitions(oas).oas;
 
     const catExpected = {
       contributors: {
@@ -195,7 +195,7 @@ describe('addLinkDefinitions', () => {
       attachments: attLink
     };
 
-    const res = addLinkDefinitions(oas);
+    const res = addLinkDefinitions(oas).oas;
     expect(
       ((((res.paths['/requirements/{requirementId}'] as OpenAPIV3.PathItemObject).get as OpenAPIV3.OperationObject)
         .responses as OpenAPIV3.ResponsesObject)['200'] as OpenAPIV3.ResponseObject).links
@@ -217,7 +217,7 @@ describe('addLinkDefinitions', () => {
       contributors: link
     };
 
-    const res = addLinkDefinitions(oas);
+    const res = addLinkDefinitions(oas).oas;
     expect((res.components as OpenAPIV3.ComponentsObject).links).toMatchObject({
       contributors: link
     });
@@ -225,6 +225,6 @@ describe('addLinkDefinitions', () => {
 
   it('does detect path extension instead of substring', () => {
     // Paths of the form /A and /A/B should be linked. Paths of the form /A, /AB not.
-    expect(addLinkDefinitions(oasSubstring)).toStrictEqual(oasSubstring);
+    expect(addLinkDefinitions(oasSubstring).oas).toStrictEqual(oasSubstring);
   });
 });

@@ -37,11 +37,11 @@ log.setLevel(loglevel);
 
 loadOpenAPIDocument(argv._[0], argv.e)
   .then(addLinkDefinitions)
-  .then(oas => {
+  .then(result => {
     if (argv.o != null) {
-      saveOpenAPIDocument(oas, argv.o, argv.f as 'yaml' | 'json', argv.e);
+      saveOpenAPIDocument(result.oas, argv.o, argv.f as 'yaml' | 'json', argv.e);
     } else {
-      console.log(serializeOpenAPIDocument(oas, argv.f as 'yaml' | 'json'));
+      console.log(serializeOpenAPIDocument(result.oas, argv.f as 'yaml' | 'json'));
     }
   })
   .catch(error => console.error(error));
