@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import log from 'loglevel';
 import yargs from 'yargs';
 import addLinkDefinitions from './link-generator';

@@ -11,7 +11,8 @@
     "dev": "nodemon --watch \"src/**/*.ts\" --ignore \"src/**/*.spec.ts\" --exec \"npm run start --\" -e ts",
     "lint": "tslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "prettier": "prettier --write \"**/*.js\" \"**/*.ts\" \"**/*.md\" \"**/*.json\" \"**/*.yaml\"",
-    "pretty-quick": "pretty-quick --staged --pattern \"**/*.js\" --pattern \"**/*.ts\" --pattern \"**/*.md\" --pattern \"**/*.json\" --pattern \"**/*.yaml\""
+    "pretty-quick": "pretty-quick --staged --pattern \"**/*.js\" --pattern \"**/*.ts\" --pattern \"**/*.md\" --pattern \"**/*.json\" --pattern \"**/*.yaml\"",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -55,5 +56,8 @@
     "hooks": {
       "pre-commit": "npm run pretty-quick && npm run lint && npm test"
     }
+  },
+  "bin": {
+    "openapi-link-generator": "./dist/index.js"
   }
 }
