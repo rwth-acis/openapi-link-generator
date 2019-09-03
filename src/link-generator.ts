@@ -156,7 +156,7 @@ function processLinkParameters(oas: OpenAPIV3.Document, links: PotentialLink[]):
  * - For every required parameter of p2, there is a parameter with the same name and schema of p1
  * @param oas The OpenAPI document
  */
-export default function addLinkDefinitions(oas: OpenAPIV3.Document): { oas: OpenAPIV3.Document; numLinks: number } {
+export function addLinkDefinitions(oas: OpenAPIV3.Document): { oas: OpenAPIV3.Document; numLinks: number } {
   let numAddedLinks = 0;
   oas = _.cloneDeep(oas);
   const potLinks = processLinkParameters(oas, findPotentialLinkPairs(oas));

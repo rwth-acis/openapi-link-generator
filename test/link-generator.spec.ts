@@ -1,6 +1,6 @@
 import oasValidator from 'oas-validator';
 import { OpenAPIV3 } from 'openapi-types';
-import addLinkDefinitions from '../src/link-generator';
+import { addLinkDefinitions } from '../src/link-generator';
 import { loadOpenAPIDocument } from '../src/openapi-tools';
 
 describe('addLinkDefinitions', () => {

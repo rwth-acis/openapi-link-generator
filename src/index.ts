@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import log from 'loglevel';
 import yargs from 'yargs';
-import addLinkDefinitions from './link-generator';
+import { addLinkDefinitions } from './link-generator';
 import { loadOpenAPIDocument, saveOpenAPIDocument, serializeOpenAPIDocument } from './openapi-tools';
 
 const argv = yargs
