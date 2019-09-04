@@ -1,9 +1,12 @@
 {
   "name": "openapi-link-generator",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A Tool to add link definitions to an OpenAPI documentation",
   "main": "./dist/link-generator.js",
   "types": "./dist/link-generator.d.ts",
+  "files": [
+    "/dist"
+  ],
   "scripts": {
     "start": "npm run build && node ./dist/index.js",
     "build": "tsc",
@@ -12,7 +15,7 @@
     "lint": "tslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "prettier": "prettier --write \"**/*.js\" \"**/*.ts\" \"**/*.md\" \"**/*.json\" \"**/*.yaml\"",
     "pretty-quick": "pretty-quick --staged --pattern \"**/*.js\" --pattern \"**/*.ts\" --pattern \"**/*.md\" --pattern \"**/*.json\" --pattern \"**/*.yaml\"",
-    "prepare": "npm run build"
+    "prepublishOnly": "npm run lint && npm test && npm run build"
   },
   "repository": {
     "type": "git",
