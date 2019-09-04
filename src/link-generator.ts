@@ -196,7 +196,7 @@ export function addLinkDefinitions(oas: OpenAPIV3.Document): { oas: OpenAPIV3.Do
     if (toGet.operationId != null) {
       operationId = toGet.operationId;
     } else {
-      operationRef = serializeJsonPointer(['paths', potLink.from, 'get']);
+      operationRef = '#' + serializeJsonPointer(['paths', potLink.from, 'get']);
     }
     const linkDefinition = {
       description: `Automatically generated link definition`,
@@ -252,7 +252,7 @@ export function addLinkDefinitions(oas: OpenAPIV3.Document): { oas: OpenAPIV3.Do
           dedupLinkName += '1';
         }
         response.links[dedupLinkName] = {
-          $ref: serializeJsonPointer(['components', 'links', referenceName])
+          $ref: '#' + serializeJsonPointer(['components', 'links', referenceName])
         };
         numAddedLinks++;
       });

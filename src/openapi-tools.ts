@@ -70,42 +70,49 @@ export function saveOpenAPIDocument(
 }
 
 /**
- * Takes the parts of a JPointer and serialized them into a string according to the specification.
- * Only produces JPointers without an address, meaning local references.
- * https://cswr.github.io/JsonSchema/spec/definitions_references/#json-pointers
+ * Takes the parts of a Json Pointer and serialized them into a string according to the
+ * JSON Reference specification.
  *
  * Example:
  *   Input  ['components', '/parts']
- *   Output '#/components/~1parts'
- * @param input The path elements of the JPointer
+ *   Output '/components/~1parts'
+ * @param input The path elements of the Json Pointer
  */
 export function serializeJsonPointer(input: string[]): string {
   if (input.length === 0) {
-    return '#/';
+    return '/';
   }
   return input
     .map(str => str.replace(/~/g, '~0').replace(/\//g, '~1'))
-    .reduce((prev, curr) => (prev += '/' + curr), '#');
+    .reduce((prev, curr) => (prev += '/' + curr), '');
 }
 
 /**
- * Takes a serialized JPointer as input and parses it into its path parts. Only works for local
- * references where no address is specified (starting with '#').
+ * Takes a serialized Json Pointer as input and parses it into its path parts.
  *
  * Example:
- *   Input  '#/components/~1parts'
+ *   Input  '/components/~1parts'
  *   Output ['components', '/parts']
- * @param input The JPointer to be parsed
+ * @param input The Json Pointer to be parsed
  */
 export function parseJsonPointer(input: string): string[] {
-  if (!input.startsWith('#')) {
-    throw new Error(`Non-local links are not supported: ${input}`);
+  if (!input.startsWith('/')) {
+    throw new Error(`Cannot parse JSON Pointer: ${input}\JSON Pointers must start with a forward-slash.`);
   }
   return input
     .split('/')
     .slice(1)
     .map(str => str.replace(/~1/g, '/').replace(/~0/g, '~'))
     .filter(str => str.length > 0);
+}
+
+/**
+ * Checks if a reference object is a reference to an internal or an external object.
+ * Return true for an external and false for an internal reference
+ * @param reference The reference object to check
+ */
+export function isExternalRef(reference: OpenAPIV3.ReferenceObject): boolean {
+  return !reference.$ref.startsWith('#');
 }
 
 /**
@@ -134,7 +141,10 @@ export function resolveComponentRef(
   reference: OpenAPIV3.ReferenceObject,
   type: 'parameters' | 'schemas' | 'responses'
 ): OpenAPIV3.ParameterObject | OpenAPIV3.SchemaObject | OpenAPIV3.ResponseObject {
-  const ref = parseJsonPointer(reference.$ref);
+  if (isExternalRef(reference)) {
+    throw new Error(`Resolving external references is not supported: ${reference.$ref}`);
+  }
+  const ref = parseJsonPointer(reference.$ref.substring(1));
   if (ref.length !== 3 || ref[0] !== 'components') {
     throw new Error(`Invalid component referernce: ${reference.$ref}`);
   }

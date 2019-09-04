@@ -156,6 +156,30 @@ describe('resolveComponentRef', () => {
     expect(() => resolveComponentRef(doc, { $ref: '#/components/responses/TestResponse' }, 'schemas')).toThrow();
     expect(() => resolveComponentRef(doc, { $ref: '#/components/responses/TestResponse' }, 'parameters')).toThrow();
   });
+
+  it('should fail on external references', () => {
+    expect(() =>
+      resolveComponentRef(
+        doc,
+        { $ref: 'https://example.com/openapi.json#/components/schemas/SchemaReference' },
+        'parameters'
+      )
+    ).toThrow();
+    expect(() =>
+      resolveComponentRef(
+        doc,
+        { $ref: 'https://example.com/openapi.json#/components/schemas/SchemaReference' },
+        'responses'
+      )
+    ).toThrow();
+    expect(() =>
+      resolveComponentRef(
+        doc,
+        { $ref: 'https://example.com/openapi.json#/components/schemas/SchemaReference' },
+        'schemas'
+      )
+    ).toThrow();
+  });
 });
 
 describe('sanitizeComponentName', () => {
@@ -176,31 +200,31 @@ describe('sanitizeComponentName', () => {
 
 describe('serializeJsonPointer', () => {
   it('assembles paths correctly', () => {
-    expect(serializeJsonPointer(['components', 'abc'])).toBe('#/components/abc');
-    expect(serializeJsonPointer(['abc'])).toBe('#/abc');
+    expect(serializeJsonPointer(['components', 'abc'])).toBe('/components/abc');
+    expect(serializeJsonPointer(['abc'])).toBe('/abc');
   });
 
   it('escapes characters correctly', () => {
-    expect(serializeJsonPointer(['/components', '~ab-c'])).toBe('#/~1components/~0ab-c');
-    expect(serializeJsonPointer(['c/o~mp', '~~ab~//'])).toBe('#/c~1o~0mp/~0~0ab~0~1~1');
-    expect(serializeJsonPointer(['!"§$%&()=?*^°`´$%/|~'])).toBe('#/!"§$%&()=?*^°`´$%~1|~0');
+    expect(serializeJsonPointer(['/components', '~ab-c'])).toBe('/~1components/~0ab-c');
+    expect(serializeJsonPointer(['c/o~mp', '~~ab~//'])).toBe('/c~1o~0mp/~0~0ab~0~1~1');
+    expect(serializeJsonPointer(['!"§$%&()=?*^°`´$%/|~'])).toBe('/!"§$%&()=?*^°`´$%~1|~0');
   });
 
   it('handles empty paths', () => {
-    expect(serializeJsonPointer([])).toBe('#/');
+    expect(serializeJsonPointer([])).toBe('/');
   });
 });
 
 describe('parseJsonPointer', () => {
   it('splits paths correctly', () => {
-    expect(parseJsonPointer('#/components/abc')).toEqual(['components', 'abc']);
-    expect(parseJsonPointer('#/')).toEqual([]);
+    expect(parseJsonPointer('/components/abc')).toEqual(['components', 'abc']);
+    expect(parseJsonPointer('/')).toEqual([]);
   });
 
   it('parses control characters', () => {
-    expect(parseJsonPointer('#/~1components/~0ab-c')).toEqual(['/components', '~ab-c']);
-    expect(parseJsonPointer('#/c~1o~0mp/~0~0ab~0~1~1')).toEqual(['c/o~mp', '~~ab~//']);
-    expect(parseJsonPointer('#/!"§$%&()=?*^°`´$%~1|~0')).toEqual(['!"§$%&()=?*^°`´$%/|~']);
+    expect(parseJsonPointer('/~1components/~0ab-c')).toEqual(['/components', '~ab-c']);
+    expect(parseJsonPointer('/c~1o~0mp/~0~0ab~0~1~1')).toEqual(['c/o~mp', '~~ab~//']);
+    expect(parseJsonPointer('/!"§$%&()=?*^°`´$%~1|~0')).toEqual(['!"§$%&()=?*^°`´$%/|~']);
   });
 
   it('throws on non-local pointers', () => {
