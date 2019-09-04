@@ -4,7 +4,7 @@ import { OpenAPIV3 } from 'openapi-types';
 import { isExternalRef, resolveComponentRef, sanitizeComponentName, serializeJsonPointer } from './openapi-tools';
 
 interface PotentialLink {
-  // The from and to strings are paths in the oas
+  // The from and to strings are paths in the OpenAPI document
   from: string;
   to: string;
 }
@@ -19,15 +19,15 @@ interface Link extends PotentialLink {
  * - Both paths have a get-request defined that has at least one successful response
  * - The to path is an extension of the from path (e.g. from=/path, to=/path/extension
  *   but not from=/path, to=/pathA)
- * @param oas The OpenAPI document
+ * @param openapi The OpenAPI document
  */
-function findPotentialLinkPairs(oas: OpenAPIV3.Document): PotentialLink[] {
+function findPotentialLinkPairs(openapi: OpenAPIV3.Document): PotentialLink[] {
   const result: PotentialLink[] = [];
 
   // Only keep paths that have a get definition that has at least one
   // successful response defined. (Successful meaning HTTP code 2xx)
-  const getPaths = Object.keys(oas.paths).filter(path => {
-    const pO = oas.paths[path].get;
+  const getPaths = Object.keys(openapi.paths).filter(path => {
+    const pO = openapi.paths[path].get;
     return (
       pO != null &&
       pO.responses != null &&
@@ -57,17 +57,17 @@ function findPotentialLinkPairs(oas: OpenAPIV3.Document): PotentialLink[] {
 }
 
 /**
- * Takes a parameters array from the oas and dereferences all the items.
- * @param oas The OpenAPI document
+ * Takes a parameters array from the OpenAPI document and dereferences all the items.
+ * @param openapi The OpenAPI document
  * @param parameters The parameters to be dereferenced
  */
 function dereferenceParameters(
-  oas: OpenAPIV3.Document,
+  openapi: OpenAPIV3.Document,
   parameters: Array<OpenAPIV3.ReferenceObject | OpenAPIV3.ParameterObject>
 ): OpenAPIV3.ParameterObject[] {
   return parameters.map(obj => {
     if ('$ref' in obj) {
-      return resolveComponentRef(oas, obj, 'parameters');
+      return resolveComponentRef(openapi, obj, 'parameters');
     } else {
       return obj;
     }
@@ -81,12 +81,12 @@ function dereferenceParameters(
  * Otherwise, we derefence internal references and consider the schemas equal
  * if they contain the same properties with the same values.
  *
- * @param oas The OpenAPI document
+ * @param openapi The OpenAPI document
  * @param firstSchema The first schema or reference to check
  * @param secondSchema The second schema or reference to check
  */
 function areSchemasMatching(
-  oas: OpenAPIV3.Document,
+  openapi: OpenAPIV3.Document,
   firstSchema?: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
   secondSchema?: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject
 ): boolean {
@@ -113,8 +113,8 @@ function areSchemasMatching(
   }
 
   // Resolve the remaining internal schema references
-  const first = '$ref' in firstSchema ? resolveComponentRef(oas, firstSchema, 'schemas') : firstSchema;
-  const second = '$ref' in secondSchema ? resolveComponentRef(oas, secondSchema, 'schemas') : secondSchema;
+  const first = '$ref' in firstSchema ? resolveComponentRef(openapi, firstSchema, 'schemas') : firstSchema;
+  const second = '$ref' in secondSchema ? resolveComponentRef(openapi, secondSchema, 'schemas') : secondSchema;
 
   // Check if the schemas are equal
   return _.isEqual(first, second);
@@ -125,12 +125,12 @@ function areSchemasMatching(
  * We assume that parameters with the same name and same schema have identical meaning across different
  * operations. This heuristic is implemented in this function.
  *
- * @param oas The OpenAPI document
+ * @param openapi The OpenAPI document
  * @param firstParameter The first parameter to check
  * @param secondParameter The second parameter to check
  */
 function areParametersMatching(
-  oas: OpenAPIV3.Document,
+  openapi: OpenAPIV3.Document,
   firstParameter: OpenAPIV3.ParameterObject,
   secondParameter: OpenAPIV3.ParameterObject
 ): boolean {
@@ -140,7 +140,7 @@ function areParametersMatching(
   }
 
   // Check if the schemas are equal
-  return areSchemasMatching(oas, firstParameter.schema, secondParameter.schema);
+  return areSchemasMatching(openapi, firstParameter.schema, secondParameter.schema);
 }
 
 /**
@@ -149,18 +149,18 @@ function areParametersMatching(
  *
  * If there is a required parameter of the 'to' path and the 'from' path does not have a matching parameter,
  * we discard this potential link. Otherwise we save the matching parameters in the parametersMap.
- * @param oas The OpenAPI document
+ * @param openapi The OpenAPI document
  * @param links An array of potential links
  */
-function processLinkParameters(oas: OpenAPIV3.Document, links: PotentialLink[]): Link[] {
+function processLinkParameters(openapi: OpenAPIV3.Document, links: PotentialLink[]): Link[] {
   // Filter the potential links where the 'to' path requires parameters that are non-existent in the 'from' path
   const newLinks: Link[] = [];
   log.debug('Processing potential link candidates');
 
   for (const link of links) {
-    const fromPath = oas.paths[link.from];
+    const fromPath = openapi.paths[link.from];
     const fromGet = fromPath.get as OpenAPIV3.OperationObject;
-    const toPath = oas.paths[link.to];
+    const toPath = openapi.paths[link.to];
     const toGet = toPath.get as OpenAPIV3.OperationObject;
 
     // Check if there is any external parameter reference in the to-path. If yes, we drop this link candidate as
@@ -176,22 +176,22 @@ function processLinkParameters(oas: OpenAPIV3.Document, links: PotentialLink[]):
       // At this point, we know that there are no external references in the to-path. We filter out all
       // the external references from the from-path.
       const fromParams = dereferenceParameters(
-        oas,
+        openapi,
         (fromGet.parameters || []).filter(param => !('$ref' in param && isExternalRef(param)))
       );
       if (fromPath.parameters != null) {
         fromParams.push(
           // Filter overriden parameters
-          ...dereferenceParameters(oas, fromPath.parameters).filter(param =>
+          ...dereferenceParameters(openapi, fromPath.parameters).filter(param =>
             fromParams.every(innerParam => innerParam.name !== param.name)
           )
         );
       }
-      const toParams = dereferenceParameters(oas, toGet.parameters || []);
+      const toParams = dereferenceParameters(openapi, toGet.parameters || []);
       if (toPath.parameters != null) {
         toParams.push(
           // Filter overriden parameters
-          ...dereferenceParameters(oas, toPath.parameters).filter(param =>
+          ...dereferenceParameters(openapi, toPath.parameters).filter(param =>
             toParams.every(innerParam => innerParam.name !== param.name)
           )
         );
@@ -207,7 +207,7 @@ function processLinkParameters(oas: OpenAPIV3.Document, links: PotentialLink[]):
       const parameterMap = new Map<OpenAPIV3.ParameterObject, OpenAPIV3.ParameterObject>();
       const valid = toParams.every(toParam => {
         // If both schema-definitions are null the equality check also succeeds
-        const fromParam = fromParams.find(p => areParametersMatching(oas, toParam, p));
+        const fromParam = fromParams.find(p => areParametersMatching(openapi, toParam, p));
         if (fromParam != null) {
           parameterMap.set(fromParam, toParam);
           return true;
@@ -232,23 +232,23 @@ function processLinkParameters(oas: OpenAPIV3.Document, links: PotentialLink[]):
 }
 
 /**
- * Adds link definitions to the OAS based on a heuristic.
+ * Adds link definitions to the given OpenAPI document based on a heuristic.
  *
  * A link from a path p1 to a path p2 is added under the following conditions:
  * - p2 starts with p1
  * - p1 and p2 have a get-request definition with at least one successful response defined
  * - For every required parameter of p2, there is a parameter with the same name and schema of p1
- * @param oas The OpenAPI document
+ * @param openapi The OpenAPI document
  */
-export function addLinkDefinitions(oas: OpenAPIV3.Document): { oas: OpenAPIV3.Document; numLinks: number } {
+export function addLinkDefinitions(openapi: OpenAPIV3.Document): { openapi: OpenAPIV3.Document; numLinks: number } {
   let numAddedLinks = 0;
-  oas = _.cloneDeep(oas);
-  const potLinks = processLinkParameters(oas, findPotentialLinkPairs(oas));
+  openapi = _.cloneDeep(openapi);
+  const potLinks = processLinkParameters(openapi, findPotentialLinkPairs(openapi));
 
   potLinks.forEach(potLink => {
-    const fromGet = oas.paths[potLink.from].get as OpenAPIV3.OperationObject;
+    const fromGet = openapi.paths[potLink.from].get as OpenAPIV3.OperationObject;
     const fromResponses = fromGet.responses as OpenAPIV3.ResponsesObject;
-    const toGet = oas.paths[potLink.to].get as OpenAPIV3.OperationObject;
+    const toGet = openapi.paths[potLink.to].get as OpenAPIV3.OperationObject;
 
     // All response objects for successful response codes for a get request.
     // $refs are resolved and deduplicated with _.uniq.
@@ -260,7 +260,7 @@ export function addLinkDefinitions(oas: OpenAPIV3.Document): { oas: OpenAPIV3.Do
         .map(code => {
           const obj = fromResponses[code];
           if ('$ref' in obj) {
-            return resolveComponentRef(oas, obj, 'responses');
+            return resolveComponentRef(openapi, obj, 'responses');
           } else {
             return obj;
           }
@@ -311,20 +311,20 @@ export function addLinkDefinitions(oas: OpenAPIV3.Document): { oas: OpenAPIV3.Do
     } else {
       // We have multiple responses where this link should be added, so we save the link in
       // the components section and reference it in every response to prevent defining it multiple times.
-      if (oas.components == null) {
-        oas.components = {};
+      if (openapi.components == null) {
+        openapi.components = {};
       }
-      if (oas.components.links == null) {
-        oas.components.links = {};
+      if (openapi.components.links == null) {
+        openapi.components.links = {};
       }
 
       // Reference name is the name of the link-definition in the components-section.
       let referenceName = linkName;
       // Prevent overwriting existing link-components with the same name
-      while (referenceName in oas.components.links) {
+      while (referenceName in openapi.components.links) {
         referenceName += '1';
       }
-      oas.components.links[referenceName] = linkDefinition;
+      openapi.components.links[referenceName] = linkDefinition;
 
       successGetResponses.forEach(response => {
         if (response.links == null) {
@@ -344,5 +344,5 @@ export function addLinkDefinitions(oas: OpenAPIV3.Document): { oas: OpenAPIV3.Do
   });
 
   log.debug(`Added ${numAddedLinks} links to response definitions`);
-  return { oas, numLinks: numAddedLinks };
+  return { openapi, numLinks: numAddedLinks };
 }

@@ -11,17 +11,17 @@ describe('addLinkDefinitions', () => {
     });
 
     it('clones the oas-object', () => {
-      const res = addLinkDefinitions(oas).oas;
+      const res = addLinkDefinitions(oas).openapi;
       expect(res).not.toBe(oas);
     });
 
     it('returns a valid oas', async () => {
-      const res = addLinkDefinitions(oas).oas;
+      const res = addLinkDefinitions(oas).openapi;
       expect((await oasValidator.validate(res, {})).valid).toBe(true);
     });
 
     it('does not remove/overwrite any property', () => {
-      const res = addLinkDefinitions(oas).oas;
+      const res = addLinkDefinitions(oas).openapi;
 
       const catResponses = ((res.paths['/categories/{categoryId}'] as OpenAPIV3.PathItemObject)
         .get as OpenAPIV3.OperationObject).responses as OpenAPIV3.ResponsesObject;
@@ -38,7 +38,7 @@ describe('addLinkDefinitions', () => {
     });
 
     it('adds the desired link definitions', () => {
-      const res = addLinkDefinitions(oas).oas;
+      const res = addLinkDefinitions(oas).openapi;
 
       const catExpected = {
         contributors: {
@@ -194,7 +194,7 @@ describe('addLinkDefinitions', () => {
         attachments: attLink
       };
 
-      const res = addLinkDefinitions(oas).oas;
+      const res = addLinkDefinitions(oas).openapi;
       expect(
         ((((res.paths['/requirements/{requirementId}'] as OpenAPIV3.PathItemObject).get as OpenAPIV3.OperationObject)
           .responses as OpenAPIV3.ResponsesObject)['200'] as OpenAPIV3.ResponseObject).links
@@ -216,7 +216,7 @@ describe('addLinkDefinitions', () => {
         contributors: link
       };
 
-      const res = addLinkDefinitions(oas).oas;
+      const res = addLinkDefinitions(oas).openapi;
       expect((res.components as OpenAPIV3.ComponentsObject).links).toMatchObject({
         contributors: link
       });
@@ -226,12 +226,12 @@ describe('addLinkDefinitions', () => {
   it('does detect path extension instead of substring', () => {
     const oasSubstring = require('./fixtures/openapi-substring.json');
     // Paths of the form /A and /A/B should be linked. Paths of the form /A, /AB not.
-    expect(addLinkDefinitions(oasSubstring).oas).toStrictEqual(oasSubstring);
+    expect(addLinkDefinitions(oasSubstring).openapi).toStrictEqual(oasSubstring);
   });
 
   it('handles external references', () => {
     const oas = require('./fixtures/openapi-external-reference.json') as OpenAPIV3.Document;
-    const res = addLinkDefinitions(oas).oas;
+    const res = addLinkDefinitions(oas).openapi;
 
     expect(
       ((((res.paths['/get'] as OpenAPIV3.PathItemObject).get as OpenAPIV3.OperationObject)
@@ -246,7 +246,7 @@ describe('addLinkDefinitions', () => {
 
   it('handles duplicate parameter and schema definitions', () => {
     const oas = require('./fixtures/openapi-duplicate-schema.json') as OpenAPIV3.Document;
-    const res = addLinkDefinitions(oas).oas;
+    const res = addLinkDefinitions(oas).openapi;
 
     expect(
       ((((res.paths['/get'] as OpenAPIV3.PathItemObject).get as OpenAPIV3.OperationObject)
