@@ -1,0 +1,87 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Test API",
+    "version": "1"
+  },
+  "paths": {
+    "/get": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "http://example.com/openapi.json#/components/parameters/TestParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/get/invalid": {
+      "get": {
+        "operationId": "getinvalid",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TestSchema"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/get/parameterless": {
+      "get": {
+        "operationId": "getparameterless",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/get/valid": {
+      "get": {
+        "operationId": "getvalid",
+        "parameters": [
+          {
+            "$ref": "http://example.com/openapi.json#/components/parameters/TestParameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TestSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "creationDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}

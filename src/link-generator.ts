@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import log from 'loglevel';
 import { OpenAPIV3 } from 'openapi-types';
-import { resolveComponentRef, sanitizeComponentName, serializeJsonPointer } from './openapi-tools';
+import { isExternalRef, resolveComponentRef, sanitizeComponentName, serializeJsonPointer } from './openapi-tools';
 
 interface PotentialLink {
   // The from and to strings are paths in the oas
@@ -75,6 +75,75 @@ function dereferenceParameters(
 }
 
 /**
+ * Check if two schema objects describe the same schema. This is done as follows:
+ * If both schemas are references and contain the same URI, we consider them equal.
+ * If exactly one schema is an external reference, we consider them not equal.
+ * Otherwise, we derefence internal references and consider the schemas equal
+ * if they contain the same properties with the same values.
+ *
+ * @param oas The OpenAPI document
+ * @param firstSchema The first schema or reference to check
+ * @param secondSchema The second schema or reference to check
+ */
+function areSchemasMatching(
+  oas: OpenAPIV3.Document,
+  firstSchema?: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
+  secondSchema?: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject
+): boolean {
+  // If both schemas are undefined, we assume they are matching
+  if (firstSchema == null && secondSchema == null) {
+    return true;
+  }
+  // At this point, at most one schema can be undefined and the other is not
+  if (firstSchema == null || secondSchema == null) {
+    return false;
+  }
+
+  if ('$ref' in firstSchema && '$ref' in secondSchema) {
+    // If we have two references, external or internal, we only check if they are equal
+    return firstSchema.$ref === secondSchema.$ref;
+  }
+
+  // At this point at least one of the schemas is not a reference. If one is a reference
+  // we require it to be internal because we currently do not parse external references.
+  for (const param of [firstSchema, secondSchema]) {
+    if ('$ref' in param && isExternalRef(param)) {
+      return false;
+    }
+  }
+
+  // Resolve the remaining internal schema references
+  const first = '$ref' in firstSchema ? resolveComponentRef(oas, firstSchema, 'schemas') : firstSchema;
+  const second = '$ref' in secondSchema ? resolveComponentRef(oas, secondSchema, 'schemas') : secondSchema;
+
+  // Check if the schemas are equal
+  return _.isEqual(first, second);
+}
+
+/**
+ * Check if two parameter objects can be considered equal. To do that, we use a simple heuristic: *
+ * We assume that parameters with the same name and same schema have identical meaning across different
+ * operations. This heuristic is implemented in this function.
+ *
+ * @param oas The OpenAPI document
+ * @param firstParameter The first parameter to check
+ * @param secondParameter The second parameter to check
+ */
+function areParametersMatching(
+  oas: OpenAPIV3.Document,
+  firstParameter: OpenAPIV3.ParameterObject,
+  secondParameter: OpenAPIV3.ParameterObject
+): boolean {
+  // Check if the names are equal
+  if (firstParameter.name !== secondParameter.name) {
+    return false;
+  }
+
+  // Check if the schemas are equal
+  return areSchemasMatching(oas, firstParameter.schema, secondParameter.schema);
+}
+
+/**
  * Filter the list of potential links by looking at the parameters.
  * To do this, we assume that parameters of different paths with same name and schema have the same meaning.
  *
@@ -94,52 +163,67 @@ function processLinkParameters(oas: OpenAPIV3.Document, links: PotentialLink[]):
     const toPath = oas.paths[link.to];
     const toGet = toPath.get as OpenAPIV3.OperationObject;
 
-    // Create parameter lists incorporating the path and the operation parameters
-    const fromParams = fromGet.parameters != null ? dereferenceParameters(oas, fromGet.parameters) : [];
-    if (fromPath.parameters != null) {
-      fromParams.push(
-        // Filter overriden parameters
-        ...dereferenceParameters(oas, fromPath.parameters).filter(param =>
-          fromParams.every(innerParam => innerParam.name !== param.name)
-        )
+    // Check if there is any external parameter reference in the to-path. If yes, we drop this link candidate as
+    // we currently can not handle external references.
+    if (
+      [...(toGet.parameters || []), ...(toPath.parameters || [])].some(
+        parameter => '$ref' in parameter && isExternalRef(parameter)
+      )
+    ) {
+      log.debug(`  Dropping link candidate due to external parameter reference: '${link.from}' => '${link.to}'`);
+    } else {
+      // Create parameter lists incorporating the path and the operation parameters.
+      // At this point, we know that there are no external references in the to-path. We filter out all
+      // the external references from the from-path.
+      const fromParams = dereferenceParameters(
+        oas,
+        (fromGet.parameters || []).filter(param => !('$ref' in param && isExternalRef(param)))
       );
-    }
-    const toParams = toGet.parameters != null ? dereferenceParameters(oas, toGet.parameters) : [];
-    if (toPath.parameters != null) {
-      toParams.push(
-        // Filter overriden parameters
-        ...dereferenceParameters(oas, toPath.parameters).filter(param =>
-          toParams.every(innerParam => innerParam.name !== param.name)
-        )
-      );
-    }
-
-    // Ignore cookie parameters as they are assumed to be automatically conveyed
-    _.remove(toParams, parameter => parameter.in === 'cookie');
-    _.remove(fromParams, parameter => parameter.in === 'cookie');
-
-    // We use a simple heuristic: We assume that parameters with the same name and same schema have identical meaning
-    // across different operations. Therefore, we filter the potential links where all parameters for the to-operation
-    // are already given by the from operation.
-    const parameterMap = new Map<OpenAPIV3.ParameterObject, OpenAPIV3.ParameterObject>();
-    const valid = toParams.every(toParam => {
-      // If both schema-definitions are null the equality check also succeeds
-      const fromParam = fromParams.find(p => p.name === toParam.name && _.isEqual(p.schema, toParam.schema));
-      if (fromParam != null) {
-        parameterMap.set(fromParam, toParam);
-        return true;
-      } else {
-        // We have not found a matching from-parameter. However, we do not need one if the parameter is optional.
-        return toParam.required == null || toParam.required === false;
+      if (fromPath.parameters != null) {
+        fromParams.push(
+          // Filter overriden parameters
+          ...dereferenceParameters(oas, fromPath.parameters).filter(param =>
+            fromParams.every(innerParam => innerParam.name !== param.name)
+          )
+        );
       }
-    });
+      const toParams = dereferenceParameters(oas, toGet.parameters || []);
+      if (toPath.parameters != null) {
+        toParams.push(
+          // Filter overriden parameters
+          ...dereferenceParameters(oas, toPath.parameters).filter(param =>
+            toParams.every(innerParam => innerParam.name !== param.name)
+          )
+        );
+      }
 
-    if (valid) {
-      newLinks.push({
-        ...link,
-        parameterMap
+      // Ignore cookie parameters as they are assumed to be automatically conveyed
+      _.remove(toParams, parameter => parameter.in === 'cookie');
+      _.remove(fromParams, parameter => parameter.in === 'cookie');
+
+      // We use a simple heuristic: We assume that parameters with the same name and same schema have identical meaning
+      // across different operations. Therefore, we filter the potential links where all parameters for the to-operation
+      // are already given by the from operation.
+      const parameterMap = new Map<OpenAPIV3.ParameterObject, OpenAPIV3.ParameterObject>();
+      const valid = toParams.every(toParam => {
+        // If both schema-definitions are null the equality check also succeeds
+        const fromParam = fromParams.find(p => areParametersMatching(oas, toParam, p));
+        if (fromParam != null) {
+          parameterMap.set(fromParam, toParam);
+          return true;
+        } else {
+          // We have not found a matching from-parameter. However, we do not need one if the parameter is optional.
+          return toParam.required == null || toParam.required === false;
+        }
       });
-      log.debug(`  Valid link candidate found: '${link.from}' => '${link.to}', ${parameterMap.size} parameter(s)`);
+
+      if (valid) {
+        newLinks.push({
+          ...link,
+          parameterMap
+        });
+        log.debug(`  Valid link candidate found: '${link.from}' => '${link.to}', ${parameterMap.size} parameter(s)`);
+      }
     }
   }
 
@@ -196,7 +280,7 @@ export function addLinkDefinitions(oas: OpenAPIV3.Document): { oas: OpenAPIV3.Do
     if (toGet.operationId != null) {
       operationId = toGet.operationId;
     } else {
-      operationRef = serializeJsonPointer(['paths', potLink.from, 'get']);
+      operationRef = '#' + serializeJsonPointer(['paths', potLink.from, 'get']);
     }
     const linkDefinition = {
       description: `Automatically generated link definition`,
@@ -252,7 +336,7 @@ export function addLinkDefinitions(oas: OpenAPIV3.Document): { oas: OpenAPIV3.Do
           dedupLinkName += '1';
         }
         response.links[dedupLinkName] = {
-          $ref: serializeJsonPointer(['components', 'links', referenceName])
+          $ref: '#' + serializeJsonPointer(['components', 'links', referenceName])
         };
         numAddedLinks++;
       });
