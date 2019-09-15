@@ -1,6 +1,6 @@
 {
   "name": "openapi-link-generator",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A Tool to add link definitions to an OpenAPI documentation",
   "main": "./dist/link-generator.js",
   "types": "./dist/link-generator.d.ts",
