@@ -65,7 +65,7 @@ describe('addLinkDefinitions', () => {
       ).toStrictEqual({
         categories: {
           description: expect.any(String),
-          operationRef: '#/paths/~1projects~1{projectId}/get',
+          operationRef: '#/paths/~1projects~1{projectId}~1categories/get',
           parameters: {
             projectId: '$request.path.projectId'
           }

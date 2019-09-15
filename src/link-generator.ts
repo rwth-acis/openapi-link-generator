@@ -280,7 +280,7 @@ export function addLinkDefinitions(openapi: OpenAPIV3.Document): { openapi: Open
     if (toGet.operationId != null) {
       operationId = toGet.operationId;
     } else {
-      operationRef = '#' + serializeJsonPointer(['paths', potLink.from, 'get']);
+      operationRef = '#' + serializeJsonPointer(['paths', potLink.to, 'get']);
     }
     const linkDefinition = {
       description: `Automatically generated link definition`,
