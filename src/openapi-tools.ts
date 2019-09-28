@@ -6,6 +6,8 @@ import Swagger2OpenAPI from 'swagger2openapi';
 import util from 'util';
 import yaml from 'yaml';
 
+log.setDefaultLevel('error');
+
 /**
  * For a Swagger 2.0 documentation it converts it to valid OpenAPI 3.0.
  * For an OpenAPI 3.0 documentation it validates its correctness.
