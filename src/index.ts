@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import log from 'loglevel';
 import yargs from 'yargs';
+import { version } from '../package.json';
 import { addLinkDefinitions } from './link-generator';
 import { loadOpenAPIDocument, saveOpenAPIDocument, serializeOpenAPIDocument } from './openapi-tools';
 
@@ -10,14 +11,8 @@ const argv = yargs
   .option('e', {
     alias: 'encoding',
     default: 'utf8',
-    describe: 'The encoding of the file to be read',
+    describe: 'The encoding used to read and write files',
     type: 'string'
-  })
-  .option('l', {
-    alias: 'log-level',
-    choices: ['error', 'warn', 'info', 'debug', 'trace'],
-    default: 'warn',
-    describe: 'Set the log level'
   })
   .option('o', {
     alias: 'output',
@@ -30,11 +25,24 @@ const argv = yargs
     default: 'json',
     describe: 'Set the output format'
   })
+  .option('v', {
+    alias: 'verbose',
+    default: false,
+    describe: 'Enable verbose logging',
+    type: 'boolean'
+  })
+  .version(version)
   .demandCommand(1).argv;
 
-// This type cast is safe because we specified those choices to yargs
-const loglevel = argv.l as 'error' | 'warn' | 'info' | 'debug' | 'trace';
-log.setLevel(loglevel);
+if (argv.o == null) {
+  log.setLevel('error');
+} else {
+  log.setLevel(argv.v ? 'debug' : 'info');
+}
+
+log.info(`Link Generator v${version}`);
+log.info('Copyright (c) 2019 Advanced Community Information Systems');
+log.info();
 
 loadOpenAPIDocument(argv._[0], argv.e)
   .then(addLinkDefinitions)
@@ -45,4 +53,4 @@ loadOpenAPIDocument(argv._[0], argv.e)
       console.log(serializeOpenAPIDocument(result.openapi, argv.f as 'yaml' | 'json'));
     }
   })
-  .catch(error => console.error(error));
+  .catch(error => log.error(error));

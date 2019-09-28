@@ -3,6 +3,8 @@ import log from 'loglevel';
 import { OpenAPIV3 } from 'openapi-types';
 import { isExternalRef, resolveComponentRef, sanitizeComponentName, serializeJsonPointer } from './openapi-tools';
 
+log.setDefaultLevel('error');
+
 interface PotentialLink {
   // The from and to strings are paths in the OpenAPI document
   from: string;
@@ -343,6 +345,6 @@ export function addLinkDefinitions(openapi: OpenAPIV3.Document): { openapi: Open
     }
   });
 
-  log.debug(`Added ${numAddedLinks} links to response definitions`);
+  log.info(`Added ${numAddedLinks} links to response definitions`);
   return { openapi, numLinks: numAddedLinks };
 }
