@@ -1,0 +1,64 @@
+name: CI
+
+on: [push]
+
+jobs:
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v1.1.0
+        with:
+          node-version: '12.x'
+
+      - name: Install Node.js dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm run test
+
+  run-linters:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v1.1.0
+        with:
+          node-version: '12.x'
+
+      - name: Install Node.js dependencies
+        run: npm install
+
+      - name: Run prettier
+        uses: samuelmeuli/lint-action@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          prettier: true
+
+      - name: Run tslint
+        run: npm run lint
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v1.1.0
+        with:
+          node-version: '12.x'
+
+      - name: Install Node.js dependencies
+        run: npm install
+
+      - name: Run build
+        run: npm run build
