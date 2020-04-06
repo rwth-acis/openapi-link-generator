@@ -1,5 +1,9 @@
 # OpenAPI-Link-Generator
 
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/rwth-acis/openapi-link-generator/CI)
+![npm](https://img.shields.io/npm/v/openapi-link-generator)
+![License](https://img.shields.io/github/license/rwth-acis/openapi-link-generator)
+
 OpenAPI-Link-Generator is a tool that enhances an existing OpenAPI documentation by adding link definitions whenever possible.
 It accepts Swagger/OpenAPI 2.0 or OpenAPI 3.0 input.
 The output is always in OpenAPI 3.0 format.
